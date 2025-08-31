@@ -1,4 +1,4 @@
-from models.invoice_model import InvoiceModel
+from models.invoice import InvoiceModel
 from views.dashboard_view import DashboardView
 
 class DashboardController:

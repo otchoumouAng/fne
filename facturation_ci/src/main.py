@@ -19,7 +19,7 @@ def main():
     db_password = getpass.getpass("Veuillez entrer le mot de passe de la base de données: ")
     db_manager = DBManager(
         host="localhost",
-        database="facturation_db",
+        database="s_facture_plus",
         user="root", # À remplacer par un utilisateur dédié
         password=db_password
     )

@@ -1,12 +1,14 @@
 from PyQt6.QtWidgets import QMessageBox, QDialog, QFileDialog
-from models.invoice_model import InvoiceModel
-from models.client_model import ClientModel
-from models.product_model import ProductModel
+from models.invoice import InvoiceModel
+from models.client import ClientModel
+from models.product import ProductModel
 from views.invoice_view import InvoiceView
 from views.invoice_editor_dialog import InvoiceEditorDialog
 from core.fne_client import certify_document, FNEClientError
 from core.pdf_generator import generate_invoice_pdf
 import os
+# Need to import QApplication for processEvents
+from PyQt6.QtWidgets import QApplication
 
 class InvoiceController:
     def __init__(self, db_manager, main_window, user_data):
@@ -134,8 +136,7 @@ class InvoiceController:
             self.main_window.statusBar().showMessage("Prêt")
             QApplication.processEvents()
 
-# Need to import QApplication for processEvents
-from PyQt6.QtWidgets import QApplication
+
 
     def generate_pdf(self):
         """Génère un PDF pour la facture sélectionnée."""

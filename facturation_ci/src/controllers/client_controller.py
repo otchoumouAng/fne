@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import QMessageBox, QDialog
-from models.client_model import ClientModel
+from models.client import ClientModel
 from views.client_view import ClientView
 from views.crud_dialog import CrudDialog
 

@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import (
-    QWidget, QVBoxLayout, QGridLayout, QGroupBox, QLabel
+    QWidget, QVBoxLayout,QHBoxLayout, QGridLayout, QGroupBox, QLabel
 )
 from PyQt6.QtGui import QFont
 from PyQt6.QtCore import Qt

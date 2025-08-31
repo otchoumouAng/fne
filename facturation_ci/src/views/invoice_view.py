@@ -3,7 +3,7 @@ from PyQt6.QtWidgets import (
     QTableView, QAbstractItemView, QHeaderView
 )
 from PyQt6.QtGui import QStandardItemModel, QStandardItem, QColor
-from PyQt.QtCore import Qt
+from PyQt6.QtCore import Qt
 
 class InvoiceView(QWidget):
     def __init__(self, parent=None):

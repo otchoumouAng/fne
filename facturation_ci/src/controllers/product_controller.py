@@ -1,6 +1,7 @@
-from PyQt6.QtWidgets import QMessageBox, QDialog, QDoubleValidator
+from PyQt6.QtWidgets import QMessageBox, QDialog
+from PyQt6.QtGui import QDoubleValidator
 from PyQt6.QtGui import QValidator
-from models.product_model import ProductModel
+from models.product import ProductModel
 from views.product_view import ProductView
 from views.crud_dialog import CrudDialog
 
