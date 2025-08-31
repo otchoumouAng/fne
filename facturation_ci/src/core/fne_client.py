@@ -1,0 +1,91 @@
+import requests
+import json
+
+# L'URL de base de l'API FNE. À mettre dans un fichier de configuration dans une app réelle.
+FNE_API_BASE_URL = "http://54.247.95.108/ws/external"
+
+class FNEClientError(Exception):
+    """Exception personnalisée pour les erreurs du client FNE."""
+    def __init__(self, message, status_code=None):
+        super().__init__(message)
+        self.status_code = status_code
+
+def certify_document(invoice_full_data: dict, company_info: dict, client_info: dict, user_info: dict, api_key: str):
+    """
+    Appelle l'API FNE pour certifier un document de vente ou d'achat.
+
+    :param invoice_full_data: Dictionnaire contenant les détails de la facture et les lignes d'articles ('details' et 'items').
+    :param company_info: Dictionnaire avec les informations de l'entreprise (tax_id).
+    :param client_info: Dictionnaire avec les informations du client.
+    :param user_info: Dictionnaire avec les informations de l'opérateur.
+    :param api_key: La clé d'API de l'entreprise pour l'authentification.
+    :return: Dictionnaire avec les données de certification FNE ('nim' et 'qrCode').
+    :raises FNEClientError: En cas d'échec de la communication ou d'erreur de l'API.
+    """
+    invoice_details = invoice_full_data['details']
+    doc_type = invoice_details['document_type'] # 'sale', 'purchase'
+
+    if doc_type not in ["sale", "purchase"]:
+        raise FNEClientError(f"Le type de document '{doc_type}' n'est pas supporté pour la signature.")
+
+    endpoint = f"{FNE_API_BASE_URL}/invoices/sign"
+
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+    }
+
+    # Construire le payload JSON selon la documentation FNE.
+    # C'est un exemple qui doit être validé et complété.
+    payload = {
+        "type": doc_type,
+        "ifuid": company_info.get("tax_id"),
+        "operator": {
+            "id": user_info.get("id"),
+            "name": user_info.get("full_name", "Opérateur")
+        },
+        "items": [
+            {
+                "name": item['description'],
+                "price": float(item['unit_price']),
+                "quantity": float(item['quantity'])
+            }
+            for item in invoice_full_data.get('items', [])
+        ],
+        "client": {
+            "name": client_info.get("name"),
+            "address": client_info.get("address")
+        },
+        # ... autres champs requis par la DGI (ex: `payment`, `invoice`)
+    }
+
+    try:
+        response = requests.post(endpoint, headers=headers, data=json.dumps(payload), timeout=20)
+        response.raise_for_status()
+
+        response_data = response.json()
+
+        if response_data.get("status") == "success" and "data" in response_data:
+            fne_data = response_data["data"]
+            if "nim" in fne_data and "qrCode" in fne_data:
+                return {
+                    "nim": fne_data["nim"],
+                    "qr_code": fne_data["qrCode"]
+                }
+
+        error_msg = response_data.get('message', json.dumps(response_data))
+        raise FNEClientError(f"Réponse invalide de l'API FNE: {error_msg}", response.status_code)
+
+    except requests.exceptions.HTTPError as e:
+        error_details = "Détail de l'erreur non disponible."
+        try:
+            error_details = e.response.json().get('message', e.response.text)
+        except json.JSONDecodeError:
+            pass
+        raise FNEClientError(f"Erreur API FNE ({e.response.status_code}): {error_details}", e.response.status_code)
+
+    except requests.exceptions.RequestException as e:
+        raise FNEClientError(f"Erreur de communication avec l'API FNE: {e}")
+    except Exception as e:
+        raise FNEClientError(f"Erreur inattendue lors de la certification: {e}")
