@@ -11,10 +11,11 @@ from core.invoice_generator import InvoiceGenerator
 from core.worker import Worker
 
 class InvoiceModule(QWidget):
-    def __init__(self, db_manager, user_data, parent=None):
+    def __init__(self, db_manager, user_data, main_window, parent=None):
         super().__init__(parent)
         self.db_manager = db_manager
         self.user_data = user_data
+        self.main_window = main_window
         self.model = InvoiceModel(self.db_manager)
         self.client_model = ClientModel(self.db_manager) # Instantiate ClientModel
         self.thread = None
@@ -159,17 +160,17 @@ class InvoiceModule(QWidget):
         self.thread.start()
 
         self.ui.print_button.setEnabled(False)
-        self.parent().statusBar().showMessage(f"Génération du PDF pour la facture #{invoice_id} en cours...")
+        self.main_window.statusBar().showMessage(f"Génération du PDF pour la facture #{invoice_id} en cours...")
 
     def on_printing_finished(self, output_file):
         QMessageBox.information(self, "Impression terminée", f"La facture a été exportée avec succès:\n{output_file}")
         self.ui.print_button.setEnabled(True)
-        self.parent().statusBar().showMessage("Prêt", 3000)
+        self.main_window.statusBar().showMessage("Prêt", 3000)
 
     def on_printing_error(self, error_message):
         QMessageBox.critical(self, "Erreur d'impression", f"Une erreur est survenue:\n{error_message}")
         self.ui.print_button.setEnabled(True)
-        self.parent().statusBar().showMessage("Erreur lors de la génération du PDF", 5000)
+        self.main_window.statusBar().showMessage("Erreur lors de la génération du PDF", 5000)
 
     def delete_invoice(self):
         # ... (rest of the method is unchanged)

@@ -54,7 +54,7 @@ def main():
     dashboard_module = DashboardModule(db_manager)
     main_window.set_module_widget(0, dashboard_module)
 
-    invoice_module = InvoiceModule(db_manager, user_data)
+    invoice_module = InvoiceModule(db_manager, user_data, main_window)
     main_window.set_module_widget(1, invoice_module)
 
     client_module = ClientModule(db_manager)
