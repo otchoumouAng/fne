@@ -111,6 +111,21 @@ def create_tables(cursor):
         "  FOREIGN KEY (`invoice_id`) REFERENCES `invoices`(`id`)"
         ") ENGINE=InnoDB")
 
+    TABLES['permissions'] = (
+        "CREATE TABLE `permissions` ("
+        "  `id` INT AUTO_INCREMENT PRIMARY KEY,"
+        "  `name` VARCHAR(255) NOT NULL UNIQUE COMMENT 'Ex: clients.view, invoices.create'"
+        ") ENGINE=InnoDB")
+
+    TABLES['role_permissions'] = (
+        "CREATE TABLE `role_permissions` ("
+        "  `role_id` INT NOT NULL,"
+        "  `permission_id` INT NOT NULL,"
+        "  PRIMARY KEY (`role_id`, `permission_id`),"
+        "  FOREIGN KEY (`role_id`) REFERENCES `roles`(`id`) ON DELETE CASCADE,"
+        "  FOREIGN KEY (`permission_id`) REFERENCES `permissions`(`id`) ON DELETE CASCADE"
+        ") ENGINE=InnoDB")
+
     print("Création des tables...")
     for table_name in TABLES:
         table_sql = TABLES[table_name]
@@ -165,6 +180,85 @@ def insert_initial_data(cursor):
     print("  - Utilisateur 'admin' créé avec succès.")
 
 
+def seed_permissions(cursor):
+    """Insère les permissions de base et les assigne aux rôles."""
+    print("\nInsertion et assignation des permissions...")
+
+    PERMISSIONS = [
+        'dashboard.view',
+        'invoices.view', 'invoices.create', 'invoices.edit', 'invoices.delete',
+        'clients.view', 'clients.create', 'clients.edit', 'clients.delete',
+        'products.view', 'products.create', 'products.edit', 'products.delete',
+        'reports.view',
+        'settings.view', 'settings.users.manage', 'settings.roles.manage'
+    ]
+
+    # Insert permissions
+    try:
+        cursor.executemany("INSERT INTO permissions (name) VALUES (%s)", [(p,) for p in PERMISSIONS])
+        print("  - Permissions de base insérées.")
+    except Error as e:
+        if e.errno == 1062: # Duplicate entry
+            print("  - Les permissions semblent déjà exister.")
+        else:
+            raise
+
+    # Define role-permission mapping
+    ROLE_PERMISSIONS = {
+        'Comptable': [
+            'dashboard.view', 'invoices.view', 'invoices.create', 'invoices.edit',
+            'clients.view', 'clients.create', 'clients.edit',
+            'products.view', 'products.create', 'products.edit',
+            'reports.view'
+        ],
+        'Vendeur': [
+            'invoices.view', 'invoices.create',
+            'clients.view', 'clients.create', 'clients.edit',
+            'products.view'
+        ]
+    }
+
+    # Assign permissions to roles
+    for role_name, permissions in ROLE_PERMISSIONS.items():
+        try:
+            cursor.execute("SELECT id FROM roles WHERE name = %s", (role_name,))
+            role_id_result = cursor.fetchone()
+            if not role_id_result:
+                continue
+            role_id = role_id_result[0]
+
+            # Clear existing permissions for this role to ensure a clean slate
+            cursor.execute("DELETE FROM role_permissions WHERE role_id = %s", (role_id,))
+
+            placeholders = ', '.join(['%s'] * len(permissions))
+            cursor.execute(f"SELECT id FROM permissions WHERE name IN ({placeholders})", permissions)
+            permission_ids = [item[0] for item in cursor.fetchall()]
+
+            role_perm_data = [(role_id, perm_id) for perm_id in permission_ids]
+            cursor.executemany("INSERT INTO role_permissions (role_id, permission_id) VALUES (%s, %s)", role_perm_data)
+            print(f"  - {len(permission_ids)} permissions assignées au rôle '{role_name}'.")
+
+        except Error as e:
+            print(f"ERREUR lors de l'assignation des permissions pour '{role_name}': {e}")
+            raise
+
+    # Admin gets all permissions
+    try:
+        cursor.execute("SELECT id FROM roles WHERE name = 'Admin'")
+        admin_role_id_result = cursor.fetchone()
+        if admin_role_id_result:
+            admin_role_id = admin_role_id_result[0]
+            cursor.execute("DELETE FROM role_permissions WHERE role_id = %s", (admin_role_id,))
+            cursor.execute("SELECT id FROM permissions")
+            all_permission_ids = [item[0] for item in cursor.fetchall()]
+            admin_perm_data = [(admin_role_id, perm_id) for perm_id in all_permission_ids]
+            cursor.executemany("INSERT INTO role_permissions (role_id, permission_id) VALUES (%s, %s)", admin_perm_data)
+            print(f"  - Toutes les {len(all_permission_ids)} permissions assignées au rôle 'Admin'.")
+    except Error as e:
+        print(f"ERREUR lors de l'assignation des permissions pour 'Admin': {e}")
+        raise
+
+
 def main():
     """Fonction principale pour exécuter le script (modifiée pour non-interactif)."""
     try:
@@ -189,15 +283,18 @@ def main():
 
         # Création des tables et insertion des données
         create_tables(cursor)
+        insert_initial_data(cursor)
+        seed_permissions(cursor)
         # Pour l'admin, on ne peut pas utiliser getpass, donc on met un mot de passe par défaut "admin"
         print("\n--- Création de l'utilisateur 'admin' avec mot de passe 'admin' ---")
         cursor.execute("SELECT id FROM users WHERE username = 'admin'")
         if not cursor.fetchone():
             hashed_password = bcrypt.hashpw(b'admin', bcrypt.gensalt())
             cursor.execute("SELECT id FROM roles WHERE name = 'Admin'")
-            admin_role_id = cursor.fetchone()
-            if admin_role_id:
-                admin_user = ('admin', hashed_password.decode('utf-8'), 'Administrateur Système', admin_role_id[0])
+            admin_role_id_result = cursor.fetchone()
+            if admin_role_id_result:
+                admin_role_id = admin_role_id_result[0]
+                admin_user = ('admin', hashed_password.decode('utf-8'), 'Administrateur Système', admin_role_id)
                 cursor.execute(
                     "INSERT INTO users (username, password_hash, full_name, role_id) VALUES (%s, %s, %s, %s)",
                     admin_user
@@ -205,7 +302,6 @@ def main():
                 print("  - Utilisateur 'admin' créé avec succès.")
         else:
             print("  - L'utilisateur 'admin' existe déjà.")
-
 
         cnx.commit()
         print("\nConfiguration de la base de données terminée avec succès !")
