@@ -252,10 +252,10 @@
                         <div>{{ item.description }}</div>
                         <div class="item-reference">Réf: {{ item.reference }}</div>
                     </td>
-                    <td class="text-center">{{ item.qty }}</td>
-                    <td class="text-right">{{ money(item.unit_price, invoice.currency) }}</td>
+                    <td class="text-center">{{ item.quantity }}</td>
+                    <td class="text-right">{{ money(item.unit_price, invoice.get("currency", "XOF")) }}</td>
                     <td class="text-right">{{ item.tax_rate }}%</td>
-                    <td class="text-right">{{ money(item.qty * item.unit_price, invoice.currency) }}</td>
+                    <td class="text-right">{{ money(item.quantity * item.unit_price, invoice.get("currency", "XOF")) }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -265,17 +265,17 @@
             <div class="totals">
                 <div class="total-row subtotal">
                     <span>Sous-total</span>
-                    <span>{{ money(subtotal, invoice.currency) }}</span>
+                    <span>{{ money(subtotal, invoice.get("currency", "XOF")) }}</span>
                 </div>
                 {% for rate, val in taxes.items() %}
                 <div class="total-row tax-row">
                     <span>TVA {{ rate }}%</span>
-                    <span>{{ money(val, invoice.currency) }}</span>
+                    <span>{{ money(val, invoice.get("currency", "XOF")) }}</span>
                 </div>
                 {% endfor %}
                 <div class="total-row grand-total">
                     <span>Total</span>
-                    <span>{{ money(grand_total, invoice.currency) }}</span>
+                    <span>{{ money(grand_total, invoice.get("currency", "XOF")) }}</span>
                 </div>
             </div>
         </div>
