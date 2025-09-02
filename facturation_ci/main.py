@@ -1,7 +1,6 @@
 import sys
 import getpass
-from PyQt6.QtWidgets import QApplication, QMessageBox, QDialog
-
+from PyQt6.QtWidgets import QApplication, QMessageBox
 
 from core.db_manager import DBManager
 from auth_dialog import AuthDialog
@@ -20,7 +19,7 @@ def main():
     # --- Connexion à la base de données ---
     # Pour le développement, on peut hardcoder le mot de passe ou utiliser des variables d'environnement
     # db_password = getpass.getpass("Veuillez entrer le mot de passe de la base de données: ")
-    db_password = "Admin@1234" # REMPLACER pour la production
+    db_password = "password" # REMPLACER pour la production
     db_manager = DBManager(
         host="127.0.0.1",
         database="s_facture_plus", # Assurez-vous que c'est le bon nom de DB

@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QDialog, QCompleter, QLineEdit, QMessageBox
+from PyQt6.QtWidgets import QDialog, QMessageBox
 from PyQt6.QtGui import QStandardItemModel, QStandardItem
 from PyQt6.QtCore import Qt, QDate
 
@@ -13,35 +13,44 @@ class InvoiceEditorDialog(QDialog):
         self.invoice_id = invoice_id
         self.client_model = ClientModel(self.db_manager)
         self.product_model = ProductModel(self.db_manager)
+        self.products = []
 
         self.ui = Ui_InvoiceEditorDialog()
         self.ui.setupUi(self)
 
         self.setup_models()
-        self.setup_connections()
         self.load_data()
+        self.setup_connections()
+        self._update_product_details() # Set initial state for product details
 
     def setup_models(self):
-        # Items table model
         self.items_model = QStandardItemModel()
         self.items_model.setHorizontalHeaderLabels(
             ['Product ID', 'Produit', 'Description', 'Quantité', 'Prix U.', 'Taux TVA', 'Total HT']
         )
         self.ui.items_table_view.setModel(self.items_model)
         self.ui.items_table_view.setColumnHidden(0, True)
+        self.items_model.dataChanged.connect(self.update_totals)
 
     def setup_connections(self):
         self.ui.button_box.accepted.connect(self.accept)
         self.ui.button_box.rejected.connect(self.reject)
-        self.ui.add_item_button.clicked.connect(self.add_item)
+        self.ui.add_item_button.clicked.connect(self._add_item_to_table)
         self.ui.remove_item_button.clicked.connect(self.remove_item)
-        self.items_model.dataChanged.connect(self.update_totals)
+        self.ui.product_combobox.currentIndexChanged.connect(self._update_product_details)
+        self.ui.quantity_spinbox.valueChanged.connect(self._update_product_details)
 
     def load_data(self):
-        # Load clients into combobox
+        # Load clients
         clients = self.client_model.get_all()
         for client in clients:
             self.ui.client_combobox.addItem(client['name'], userData=client['id'])
+
+        # Load products
+        self.products = self.product_model.get_all()
+        self.ui.product_combobox.addItem("- Sélectionner un produit -", userData=None)
+        for product in self.products:
+            self.ui.product_combobox.addItem(product['name'], userData=product)
 
         # Set dates
         self.ui.issue_date_edit.setDate(QDate.currentDate())
@@ -49,24 +58,58 @@ class InvoiceEditorDialog(QDialog):
 
         if self.invoice_id:
             # TODO: Load existing invoice data for editing
+            self.setWindowTitle(f"Modifier la Facture #{self.invoice_id}")
             pass
 
-    def add_item(self):
-        # In a real app, this would open a product search dialog
-        # For simplicity, we add a blank row to be edited
+    def _update_product_details(self):
+        product = self.ui.product_combobox.currentData()
+        if product:
+            price = float(product.get('unit_price', 0))
+            tax_rate = float(product.get('tax_rate', 0))
+            self.ui.price_value.setText(f"{price:.2f}")
+            self.ui.tax_rate_value.setText(f"{tax_rate:.2f}%")
+        else:
+            self.ui.price_value.setText("0.00")
+            self.ui.tax_rate_value.setText("0.00%")
+
+    def _add_item_to_table(self):
+        product = self.ui.product_combobox.currentData()
+        quantity = self.ui.quantity_spinbox.value()
+
+        if not product:
+            QMessageBox.warning(self, "Aucun produit", "Veuillez sélectionner un produit à ajouter.")
+            return
+
+        price = float(product['unit_price'])
+        tax_rate = float(product['tax_rate'])
+        total_ht = price * quantity
+
         row = [
-            QStandardItem(""), # Product ID
-            QStandardItem(""), # Product Name
-            QStandardItem(""), # Description
-            QStandardItem("1"), # Quantity
-            QStandardItem("0.00"), # Unit Price
-            QStandardItem("18.00"), # Tax Rate
-            QStandardItem("0.00") # Total HT
+            QStandardItem(str(product['id'])),
+            QStandardItem(product['name']),
+            QStandardItem(product['description']),
+            QStandardItem(str(quantity)),
+            QStandardItem(f"{price:.2f}"),
+            QStandardItem(f"{tax_rate:.2f}"),
+            QStandardItem(f"{total_ht:.2f}")
         ]
+
+        for item in row:
+            item.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled)
+
         self.items_model.appendRow(row)
+        self.update_totals()
+
+        # Reset controls
+        self.ui.product_combobox.setCurrentIndex(0)
+        self.ui.quantity_spinbox.setValue(1)
+
 
     def remove_item(self):
         selected_rows = self.ui.items_table_view.selectionModel().selectedRows()
+        if not selected_rows:
+            QMessageBox.warning(self, "Aucune sélection", "Veuillez sélectionner une ligne à supprimer.")
+            return
         for index in sorted(selected_rows, reverse=True):
             self.items_model.removeRow(index.row())
         self.update_totals()
@@ -83,16 +126,16 @@ class InvoiceEditorDialog(QDialog):
                 row_total_ht = quantity * price
                 row_total_tax = row_total_ht * (tax_rate / 100)
 
-                self.items_model.item(row, 6).setText(f"{row_total_ht:.2f}")
+                # The total HT in the cell is already set, just read it
                 total_ht += row_total_ht
                 total_tax += row_total_tax
-            except (ValueError, TypeError):
-                continue # Ignore non-numeric values for now
+            except (ValueError, TypeError, AttributeError):
+                continue
 
         total_ttc = total_ht + total_tax
-        self.ui.total_ht_value.setText(f"{total_ht:.2f}")
-        self.ui.total_tax_value.setText(f"{total_tax:.2f}")
-        self.ui.total_ttc_value.setText(f"{total_ttc:.2f}")
+        self.ui.total_ht_value.setText(f"{total_ht:,.2f}".replace(",", " "))
+        self.ui.total_tax_value.setText(f"{total_tax:,.2f}".replace(",", " "))
+        self.ui.total_ttc_value.setText(f"{total_ttc:,.2f}".replace(",", " "))
 
     def get_data(self):
         client_id = self.ui.client_combobox.currentData()
@@ -100,21 +143,19 @@ class InvoiceEditorDialog(QDialog):
             QMessageBox.warning(self, "Client manquant", "Veuillez sélectionner un client.")
             return None
 
+        if self.items_model.rowCount() == 0:
+            QMessageBox.warning(self, "Lignes manquantes", "Une facture doit contenir au moins une ligne.")
+            return None
+
         invoice_details = {
             'client_id': client_id,
             'issue_date': self.ui.issue_date_edit.date().toString(Qt.DateFormat.ISODate),
             'due_date': self.ui.due_date_edit.date().toString(Qt.DateFormat.ISODate),
-            'total_amount': float(self.ui.total_ttc_value.text())
+            'total_amount': float(self.ui.total_ttc_value.text().replace(" ", ""))
         }
 
         invoice_items = []
         for row in range(self.items_model.rowCount()):
-            # A real implementation needs to get product_id correctly
-            # This is a simplification
-            if not self.items_model.item(row, 0) or not self.items_model.item(row, 0).text():
-                 QMessageBox.warning(self, "Produit manquant", f"Veuillez sélectionner un produit pour la ligne {row + 1}.")
-                 return None
-
             item = {
                 'product_id': int(self.items_model.item(row, 0).text()),
                 'description': self.items_model.item(row, 2).text(),
@@ -123,9 +164,5 @@ class InvoiceEditorDialog(QDialog):
                 'tax_rate': float(self.items_model.item(row, 5).text())
             }
             invoice_items.append(item)
-
-        if not invoice_items:
-            QMessageBox.warning(self, "Lignes manquantes", "Une facture doit contenir au moins une ligne.")
-            return None
 
         return {'details': invoice_details, 'items': invoice_items}

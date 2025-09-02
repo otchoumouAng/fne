@@ -3,5 +3,3 @@ mysql-connector-python
 requests
 reportlab
 bcrypt
-num2words
-jinja2
