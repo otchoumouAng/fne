@@ -61,7 +61,7 @@ class InvoiceGenerator:
             taxes=taxes,
             total_tax=total_tax,
             grand_total=grand_total,
-            grand_total_words=self.money_to_words(grand_total, invoice["currency"]),
+            grand_total_words=self.money_to_words(grand_total, invoice.get("currency", "XOF")),
             money=self.money
         )
         return html_content
