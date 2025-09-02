@@ -1,6 +1,7 @@
+import asyncio
 from jinja2 import Environment, FileSystemLoader
-from playwright.sync_api import sync_playwright
-from num2words import num2words 
+from playwright.async_api import async_playwright
+from num2words import num2words
 
 
 class InvoiceGenerator:
@@ -65,15 +66,15 @@ class InvoiceGenerator:
         )
         return html_content
 
-    def generate_pdf(self, html_content, output_file="facture.pdf"):
-        """Générer le PDF à partir du HTML via Playwright"""
-        with sync_playwright() as p:
-            browser = p.chromium.launch()
-            page = browser.new_page()
-            page.set_content(html_content)
+    async def generate_pdf(self, html_content, output_file="facture.pdf"):
+        """Générer le PDF à partir du HTML via Playwright (version asynchrone)"""
+        async with async_playwright() as p:
+            browser = await p.chromium.launch()
+            page = await browser.new_page()
+            await page.set_content(html_content)
 
             # Options avec pied de page personnalisé
-            page.pdf(
+            await page.pdf(
                 path=output_file,
                 format="A4",
                 print_background=True,
@@ -86,14 +87,14 @@ class InvoiceGenerator:
                 header_template="<div></div>",  # pas de header
                 margin={"top": "5mm", "bottom": "10mm"}
             )
-            browser.close()
+            await browser.close()
         print(f"✅ Facture générée : {output_file}")
 
 
 # ---------------------------
 # Exemple d'utilisation
 # ---------------------------
-if __name__ == "__main__":
+async def main():
     data = {
         "header": {
             "company": {
@@ -129,4 +130,7 @@ if __name__ == "__main__":
         invoice=data["header"]["invoice"],
         details=data["details"]
     )
-    generator.generate_pdf(html)
+    await generator.generate_pdf(html)
+
+if __name__ == "__main__":
+    asyncio.run(main())
