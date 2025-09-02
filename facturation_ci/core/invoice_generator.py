@@ -39,7 +39,7 @@ class InvoiceGenerator:
         subtotal = 0
         taxes = {}
         for item in details:
-            line_ht = item["qty"] * item["unit_price"]
+            line_ht = item["quantity"] * item["unit_price"]
             subtotal += line_ht
             tax_amt = round(line_ht * item["tax_rate"] / 100)
             taxes[item["tax_rate"]] = taxes.get(item["tax_rate"], 0) + tax_amt
@@ -117,9 +117,9 @@ async def main():
             }
         },
         "details": [
-            {"reference": "SVC-001", "description": "Conseil stratégique et atelier d'innovation (2 jours)", "qty": 2, "unit_price": 350000, "tax_rate": 18},
-            {"reference": "DEV-002", "description": "Développement plateforme e-commerce - phase 1", "qty": 1, "unit_price": 1250000, "tax_rate": 18},
-            {"reference": "SUP-003", "description": "Contrat de maintenance annuel (12 mois)", "qty": 1, "unit_price": 450000, "tax_rate": 18}
+            {"reference": "SVC-001", "description": "Conseil stratégique et atelier d'innovation (2 jours)", "quantity": 2, "unit_price": 350000, "tax_rate": 18},
+            {"reference": "DEV-002", "description": "Développement plateforme e-commerce - phase 1", "quantity": 1, "unit_price": 1250000, "tax_rate": 18},
+            {"reference": "SUP-003", "description": "Contrat de maintenance annuel (12 mois)", "quantity": 1, "unit_price": 450000, "tax_rate": 18}
         ]
     }
 
