@@ -1,4 +1,6 @@
 import sys
+import os
+import webbrowser
 from PyQt6.QtWidgets import QWidget, QMessageBox, QDialog
 from PyQt6.QtGui import QStandardItemModel, QStandardItem
 from PyQt6.QtCore import Qt, QThread
@@ -163,9 +165,23 @@ class InvoiceModule(QWidget):
         self.main_window.statusBar().showMessage(f"Génération du PDF pour la facture #{invoice_id} en cours...")
 
     def on_printing_finished(self, output_file):
-        QMessageBox.information(self, "Impression terminée", f"La facture a été exportée avec succès:\n{output_file}")
         self.ui.print_button.setEnabled(True)
         self.main_window.statusBar().showMessage("Prêt", 3000)
+
+        reply = QMessageBox.information(
+            self,
+            "Impression terminée",
+            f"La facture a été exportée avec succès:\n{output_file}\n\nVoulez-vous l'ouvrir maintenant ?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.Yes
+        )
+
+        if reply == QMessageBox.StandardButton.Yes:
+            try:
+                # Use os.path.abspath to ensure the path is correct for the OS
+                webbrowser.open(os.path.abspath(output_file))
+            except Exception as e:
+                QMessageBox.critical(self, "Erreur d'ouverture", f"Impossible d'ouvrir le fichier PDF:\n{e}")
 
     def on_printing_error(self, error_message):
         QMessageBox.critical(self, "Erreur d'impression", f"Une erreur est survenue:\n{error_message}")
