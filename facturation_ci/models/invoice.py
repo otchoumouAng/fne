@@ -111,7 +111,8 @@ class InvoiceModel:
 
         cursor = connection.cursor()
         try:
-            connection.start_transaction()
+            # La transaction est démarrée implicitement par mysql-connector
+            # La ligne connection.start_transaction() était redondante.
 
             # 1. Insérer dans la table 'invoices'
             invoice_query = """

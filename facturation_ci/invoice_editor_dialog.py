@@ -94,8 +94,9 @@ class InvoiceEditorDialog(QDialog):
             QStandardItem(f"{total_ht:.2f}")
         ]
 
-        for item in row:
-            item.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled)
+        # Let the items have default flags. The view's editTriggers
+        # property is enough to prevent editing. Removing the explicit
+        # setFlags call might fix subtle selection issues.
 
         self.items_model.appendRow(row)
         self.update_totals()
