@@ -166,12 +166,12 @@ def insert_initial_data(cursor):
 
 
 def main():
-    """Fonction principale pour exécuter le script."""
+    """Fonction principale pour exécuter le script (modifiée pour non-interactif)."""
     try:
-        db_host = input("Entrez l'hôte de la base de données (ex: localhost): ")
-        db_user = input("Entrez le nom d'utilisateur de la base de données (ex: root): ")
-        db_password = getpass.getpass("Entrez le mot de passe de la base de données: ")
-        db_name = input("Entrez le nom de la base de données pour l'application (ex: facturation_db): ")
+        db_host = "127.0.0.1"
+        db_user = "root"
+        db_password = "password"
+        db_name = "s_facture_plus"
 
         # Connexion au serveur MySQL
         cnx = mysql.connector.connect(
@@ -189,7 +189,23 @@ def main():
 
         # Création des tables et insertion des données
         create_tables(cursor)
-        insert_initial_data(cursor)
+        # Pour l'admin, on ne peut pas utiliser getpass, donc on met un mot de passe par défaut "admin"
+        print("\n--- Création de l'utilisateur 'admin' avec mot de passe 'admin' ---")
+        cursor.execute("SELECT id FROM users WHERE username = 'admin'")
+        if not cursor.fetchone():
+            hashed_password = bcrypt.hashpw(b'admin', bcrypt.gensalt())
+            cursor.execute("SELECT id FROM roles WHERE name = 'Admin'")
+            admin_role_id = cursor.fetchone()
+            if admin_role_id:
+                admin_user = ('admin', hashed_password.decode('utf-8'), 'Administrateur Système', admin_role_id[0])
+                cursor.execute(
+                    "INSERT INTO users (username, password_hash, full_name, role_id) VALUES (%s, %s, %s, %s)",
+                    admin_user
+                )
+                print("  - Utilisateur 'admin' créé avec succès.")
+        else:
+            print("  - L'utilisateur 'admin' existe déjà.")
+
 
         cnx.commit()
         print("\nConfiguration de la base de données terminée avec succès !")
