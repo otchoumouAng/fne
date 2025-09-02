@@ -159,6 +159,60 @@ class InvoiceModel:
         finally:
             cursor.close()
 
+    def update(self, invoice_id, invoice_data):
+        """Met à jour une facture existante et ses lignes d'articles dans une transaction."""
+        connection = self.db_manager.get_connection()
+        if not connection:
+            return False, "Erreur de connexion à la BDD."
+
+        cursor = connection.cursor()
+        try:
+            # 1. Mettre à jour la table 'invoices'
+            update_query = """
+                UPDATE invoices
+                SET client_id = %s, issue_date = %s, due_date = %s, total_amount = %s
+                WHERE id = %s
+            """
+            invoice_details = invoice_data['details']
+            invoice_values = (
+                invoice_details['client_id'],
+                invoice_details['issue_date'],
+                invoice_details['due_date'],
+                invoice_details['total_amount'],
+                invoice_id
+            )
+            cursor.execute(update_query, invoice_values)
+
+            # 2. Supprimer les anciens 'invoice_items'
+            cursor.execute("DELETE FROM invoice_items WHERE invoice_id = %s", (invoice_id,))
+
+            # 3. Insérer les nouveaux 'invoice_items'
+            items_query = """
+                INSERT INTO invoice_items (invoice_id, product_id, description, quantity, unit_price, tax_rate)
+                VALUES (%s, %s, %s, %s, %s, %s)
+            """
+            for item in invoice_data['items']:
+                item_values = (
+                    invoice_id,
+                    item['product_id'],
+                    item['description'],
+                    item['quantity'],
+                    item['unit_price'],
+                    item['tax_rate']
+                )
+                cursor.execute(items_query, item_values)
+
+            connection.commit()
+            print(f"Facture ID {invoice_id} mise à jour avec succès.")
+            return True, None
+        except Error as e:
+            connection.rollback()
+            error_message = f"Erreur transactionnelle lors de la mise à jour de la facture: {e}"
+            print(error_message)
+            return False, error_message
+        finally:
+            cursor.close()
+
     def update_fne_data(self, invoice_id, fne_status, nim=None, qr_code=None, error_message=None):
         """Met à jour le statut et les données FNE d'une facture."""
         connection = self.db_manager.get_connection()
