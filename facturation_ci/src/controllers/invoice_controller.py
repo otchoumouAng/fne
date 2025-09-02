@@ -13,7 +13,7 @@ from PyQt6.QtWidgets import QApplication
 class InvoiceController:
     def __init__(self, db_manager, main_window, user_data):
         self.db_manager = db_manager
-        self.main_window = main_window
+        self.main_window = main_window.ui
         self.user_data = user_data
 
         # Models

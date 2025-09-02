@@ -6,7 +6,7 @@ from views.crud_dialog import CrudDialog
 class ClientController:
     def __init__(self, db_manager, main_window):
         self.db_manager = db_manager
-        self.main_window = main_window
+        self.main_window = main_window.ui
 
         self.model = ClientModel(self.db_manager)
         self.view = ClientView()

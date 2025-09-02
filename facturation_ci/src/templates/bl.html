@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    h1 { color: #0f766e; }
+    table { width:100%; border-collapse: collapse; margin-top:20px }
+    th, td { border-bottom:1px solid #ddd; padding:8px }
+    th { background:#f6f8fb; text-align:left; font-size:13px; color:#6b7280 }
+    .totals { margin-top:20px; width:300px; float:right; }
+  </style>
+</head>
+<body>
+  <h1>Bon de Livraison #{{ document.number }}</h1>
+  <p>Date: {{ document.date }}</p>
+
+  <h3>Expéditeur :</h3>
+  <p>
+    {{ company.name }}<br>
+    {{ company.address | replace('\n', '<br>') | safe }}<br>
+    {{ company.contact }}
+  </p>
+
+  <h3>Destinataire :</h3>
+  <p>
+    {{ client.name }}<br>
+    {{ client.address | replace('\n', '<br>') | safe }}<br>
+    {{ client.contact }}
+  </p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Produit / Service</th>
+        <th>Qté</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in details %}
+      <tr>
+        <td>{{ loop.index }}</td>
+        <td>{{ item.description }}</td>
+        <td style="text-align:center">{{ item.qty }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div style="margin-top:50px; font-size:12px; color:#6b7280">
+    Remarque: {{ document.notes }}
+  </div>
+</body>
+</html>

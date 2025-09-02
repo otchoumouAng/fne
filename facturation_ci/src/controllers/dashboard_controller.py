@@ -1,13 +1,13 @@
 from models.invoice import InvoiceModel
-from views.dashboard_view import DashboardView
+from views.dashboard_view import MainWindow
 
 class DashboardController:
     def __init__(self, db_manager, main_window):
         self.db_manager = db_manager
-        self.main_window = main_window
+        self.main_window = main_window.ui
 
         self.invoice_model = InvoiceModel(self.db_manager)
-        self.view = DashboardView()
+        self.view = MainWindow()
 
         # Remplacer le widget placeholder dans la MainWindow (index 0)
         dashboard_widget_index = 0
