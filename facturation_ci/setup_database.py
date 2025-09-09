@@ -66,6 +66,85 @@ def create_tables(cursor):
         "  `tax_rate` DECIMAL(5, 2) DEFAULT 18.00 COMMENT 'Taux de TVA en pourcentage'"
         ") ENGINE=InnoDB")
 
+    # --- NOUVELLE ARCHITECTURE: COMMANDE -> FACTURE ---
+
+    TABLES['commandes'] = (
+        "CREATE TABLE `commandes` ("
+        "  `id` INT AUTO_INCREMENT PRIMARY KEY,"
+        "  `code_commande` VARCHAR(9) NOT NULL UNIQUE,"
+        "  `client_id` INT NOT NULL,"
+        "  `user_id` INT NOT NULL,"
+        "  `date_commande` DATE NOT NULL,"
+        "  `total_ht` DECIMAL(15, 2) NOT NULL,"
+        "  `total_tva` DECIMAL(15, 2) NOT NULL,"
+        "  `total_ttc` DECIMAL(15, 2) NOT NULL,"
+        "  `statut` ENUM('en_cours', 'terminee', 'annulee') NOT NULL DEFAULT 'en_cours',"
+        "  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,"
+        "  FOREIGN KEY (`client_id`) REFERENCES `clients`(`id`),"
+        "  FOREIGN KEY (`user_id`) REFERENCES `users`(`id`)"
+        ") ENGINE=InnoDB")
+
+    TABLES['commande_items'] = (
+        "CREATE TABLE `commande_items` ("
+        "  `id` INT AUTO_INCREMENT PRIMARY KEY,"
+        "  `commande_id` INT NOT NULL,"
+        "  `product_id` INT NOT NULL,"
+        "  `description` VARCHAR(255) NOT NULL,"
+        "  `quantity` DECIMAL(10, 2) NOT NULL,"
+        "  `unit_price` DECIMAL(15, 2) NOT NULL,"
+        "  `tax_rate` DECIMAL(5, 2) NOT NULL,"
+        "  FOREIGN KEY (`commande_id`) REFERENCES `commandes`(`id`) ON DELETE CASCADE,"
+        "  FOREIGN KEY (`product_id`) REFERENCES `products`(`id`)"
+        ") ENGINE=InnoDB")
+
+    TABLES['factures'] = (
+        "CREATE TABLE `factures` ("
+        "  `id` INT AUTO_INCREMENT PRIMARY KEY,"
+        "  `code_facture` VARCHAR(255) NOT NULL UNIQUE,"
+        "  `commande_id` INT NOT NULL UNIQUE,"
+        "  `date_facturation` DATE NOT NULL,"
+        "  `statut_fne` ENUM('pending', 'success', 'failed') DEFAULT 'pending',"
+        "  `fne_nim` VARCHAR(255) NULL,"
+        "  `fne_qr_code` TEXT NULL,"
+        "  `fne_error_message` TEXT NULL,"
+        "  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,"
+        "  FOREIGN KEY (`commande_id`) REFERENCES `commandes`(`id`)"
+        ") ENGINE=InnoDB")
+
+    TABLES['bordereaux_livraison'] = (
+        "CREATE TABLE `bordereaux_livraison` ("
+        "  `id` INT AUTO_INCREMENT PRIMARY KEY,"
+        "  `code_bl` VARCHAR(255) NOT NULL UNIQUE,"
+        "  `facture_id` INT NOT NULL UNIQUE,"
+        "  `date_creation` DATETIME NOT NULL,"
+        "  `statut_fne` ENUM('pending', 'success', 'failed') DEFAULT 'pending',"
+        "  `fne_nim` VARCHAR(255) NULL,"
+        "  `fne_qr_code` TEXT NULL,"
+        "  `fne_error_message` TEXT NULL,"
+        "  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,"
+        "  FOREIGN KEY (`facture_id`) REFERENCES `factures`(`id`)"
+        ") ENGINE=InnoDB")
+
+    TABLES['factures_avoir'] = (
+        "CREATE TABLE `factures_avoir` ("
+        "  `id` INT AUTO_INCREMENT PRIMARY KEY,"
+        "  `code_avoir` VARCHAR(255) NOT NULL UNIQUE,"
+        "  `facture_origine_id` INT NOT NULL,"
+        "  `date_creation` DATE NOT NULL,"
+        "  `lignes_avoir` JSON NOT NULL,"
+        "  `total_ht` DECIMAL(15, 2) NOT NULL,"
+        "  `total_tva` DECIMAL(15, 2) NOT NULL,"
+        "  `total_ttc` DECIMAL(15, 2) NOT NULL,"
+        "  `statut_fne` ENUM('pending', 'success', 'failed') DEFAULT 'pending',"
+        "  `fne_nim` VARCHAR(255) NULL,"
+        "  `fne_qr_code` TEXT NULL,"
+        "  `fne_error_message` TEXT NULL,"
+        "  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,"
+        "  FOREIGN KEY (`facture_origine_id`) REFERENCES `factures`(`id`)"
+        ") ENGINE=InnoDB")
+
+    # --- ANCIENNE STRUCTURE (CONSERVÉE POUR L'HISTORIQUE) ---
+
     TABLES['invoices'] = (
         "CREATE TABLE `invoices` ("
         "  `id` INT AUTO_INCREMENT PRIMARY KEY,"
@@ -186,6 +265,7 @@ def seed_permissions(cursor):
 
     PERMISSIONS = [
         'dashboard.view',
+        'commandes.view', 'commandes.create', 'commandes.edit', 'commandes.delete',
         'invoices.view', 'invoices.create', 'invoices.edit', 'invoices.delete',
         'clients.view', 'clients.create', 'clients.edit', 'clients.delete',
         'products.view', 'products.create', 'products.edit', 'products.delete',
@@ -206,12 +286,15 @@ def seed_permissions(cursor):
     # Define role-permission mapping
     ROLE_PERMISSIONS = {
         'Comptable': [
-            'dashboard.view', 'invoices.view', 'invoices.create', 'invoices.edit',
+            'dashboard.view',
+            'commandes.view', 'commandes.create', 'commandes.edit', 'commandes.delete',
+            'invoices.view', 'invoices.create', 'invoices.edit',
             'clients.view', 'clients.create', 'clients.edit',
             'products.view', 'products.create', 'products.edit',
             'reports.view'
         ],
         'Vendeur': [
+            'commandes.view', 'commandes.create',
             'invoices.view', 'invoices.create',
             'clients.view', 'clients.create', 'clients.edit',
             'products.view'

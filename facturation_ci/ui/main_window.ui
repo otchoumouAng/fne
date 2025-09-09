@@ -75,6 +75,14 @@ QStatusBar {
       </item>
       <item>
        <property name="text">
+        <string>Commandes</string>
+       </property>
+       <property name="flags">
+        <set>Qt::ItemIsSelectable|Qt::ItemIsEnabled</set>
+       </property>
+      </item>
+      <item>
+       <property name="text">
         <string>Factures</string>
        </property>
        <property name="flags">
@@ -130,6 +138,26 @@ QStatusBar {
          <widget class="QLabel" name="label">
           <property name="text">
            <string>Contenu du Dashboard</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">QLabel {
+    font-size: 18px;
+    color: #7f8c8d;
+}</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="commandes_page">
+       <layout class="QVBoxLayout" name="verticalLayout_commandes">
+        <item>
+         <widget class="QLabel" name="label_commandes">
+          <property name="text">
+           <string>Contenu des Commandes</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignCenter</set>
