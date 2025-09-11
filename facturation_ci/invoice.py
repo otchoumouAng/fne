@@ -37,8 +37,8 @@ class InvoiceModule(QWidget):
         self.ui.setupUi(self)
 
         self.setup_buttons()
-        self.connect_signals()
         self.load_invoices()
+        self.connect_signals()
 
     def setup_buttons(self):
         # Désactiver les boutons qui nécessitent une sélection
