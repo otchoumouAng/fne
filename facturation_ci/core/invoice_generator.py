@@ -1,13 +1,19 @@
-import asyncio
+import asyncio,os
 from jinja2 import Environment, FileSystemLoader
 from playwright.async_api import async_playwright
 from num2words import num2words
 
 
 class InvoiceGenerator:
-    def __init__(self, template_dir="templates", template_file="invoice.html"):
-        self.env = Environment(loader=FileSystemLoader(template_dir))
+
+    def __init__(self, template_file="invoice.html"):
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        parent_dir = os.path.dirname(script_dir)
+        template_dir_path = os.path.join(parent_dir, 'templates')
+        
+        self.env = Environment(loader=FileSystemLoader(template_dir_path))
         self.template = self.env.get_template(template_file)
+    
 
     @staticmethod
     def money(value, currency="XOF"):

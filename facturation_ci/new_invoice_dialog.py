@@ -1,6 +1,6 @@
-from PyQt6.QtWidgets import QDialog, QDialogButtonBox, QPushButton
+from PyQt6.QtWidgets import QDialog, QDialogButtonBox
 from PyQt6.QtGui import QStandardItemModel, QStandardItem
-from PyQt6.QtCore import QSortFilterProxyModel, Qt
+from PyQt6.QtCore import Qt
 
 from page._new_invoice_dialog import Ui_NewInvoiceDialog
 from models.commande import CommandeModel
@@ -12,77 +12,120 @@ class NewInvoiceDialog(QDialog):
         self.db_manager = db_manager
         self.commande_model = CommandeModel(self.db_manager)
         self.client_model = ClientModel(self.db_manager)
-
+        
         self.ui = Ui_NewInvoiceDialog()
         self.ui.setupUi(self)
 
-        self.unvoiced_commandes = []
+        self.master_commandes = []
         self.selected_commande_id = None
 
-        self.setup_model()
-        self.setup_filters()
-        self.setup_connections()
+        self.setup_ui_elements()
+        self.load_and_populate_initial_data()
+        self.connect_signals()
 
-        self.load_unvoiced_commandes()
-
-        # Ajouter le bouton "Générer" et le désactiver
+    def setup_ui_elements(self):
+        # Configure la table
+        self.table_model = QStandardItemModel()
+        self.table_model.setHorizontalHeaderLabels(['ID', 'Code Commande', 'Client', 'Date', 'Total TTC'])
+        self.ui.commandes_table_view.setModel(self.table_model)
+        self.ui.commandes_table_view.setColumnHidden(0, True)
+        
+        # Ajoute et configure le bouton Générer
         self.generate_button = self.ui.button_box.addButton("Générer la facture", QDialogButtonBox.ButtonRole.AcceptRole)
         self.generate_button.setEnabled(False)
 
-    def setup_model(self):
-        self.model = QStandardItemModel()
-        self.model.setHorizontalHeaderLabels(['ID', 'Code Commande', 'Client', 'Date', 'Total TTC'])
-
-        self.proxy_model = QSortFilterProxyModel()
-        self.proxy_model.setSourceModel(self.model)
-
-        self.ui.commandes_table_view.setModel(self.proxy_model)
-        self.ui.commandes_table_view.setColumnHidden(0, True)
-
-    def setup_filters(self):
-        # Clients
-        clients = self.client_model.get_all()
+    def load_and_populate_initial_data(self):
+        # Charge la liste principale une seule fois depuis la base de données
+        self.master_commandes = self.commande_model.get_all_unvoiced()
+        
+        # Remplit le filtre des clients, qui ne change pas
+        self.ui.client_filter_combo.blockSignals(True)
         self.ui.client_filter_combo.addItem("Tous les clients", userData=None)
+        clients = self.client_model.get_all()
         for client in clients:
             self.ui.client_filter_combo.addItem(client['name'], userData=client['id'])
+        self.ui.client_filter_combo.blockSignals(False)
+        
+        # Déclenche la première mise à jour des filtres dépendants et de la table
+        self.update_filters_and_table()
 
-        # Dates et Codes (seront remplis dans load_unvoiced_commandes)
-        self.ui.date_filter_combo.addItem("Toutes les dates", userData=None)
-        self.ui.commande_code_filter_combo.addItem("Tous les codes", userData=None)
-
-    def setup_connections(self):
+    def connect_signals(self):
+        # Chaque filtre déclenche la mise à jour
+        self.ui.client_filter_combo.currentIndexChanged.connect(self.update_filters_and_table)
+        self.ui.date_filter_combo.currentIndexChanged.connect(self.update_filters_and_table)
+        self.ui.commande_code_filter_combo.currentIndexChanged.connect(self.update_filters_and_table)
+        
+        # La sélection dans la table active le bouton Générer
         self.ui.commandes_table_view.selectionModel().selectionChanged.connect(self.on_selection_changed)
         self.generate_button.clicked.connect(self.accept)
-        self.ui.client_filter_combo.currentIndexChanged.connect(self.apply_filters)
-        self.ui.date_filter_combo.currentIndexChanged.connect(self.apply_filters)
-        self.ui.commande_code_filter_combo.currentIndexChanged.connect(self.apply_filters)
 
-    def load_unvoiced_commandes(self):
-        self.unvoiced_commandes = self.commande_model.get_all_unvoiced()
-        self.model.removeRows(0, self.model.rowCount())
-
-        # Remplir les filtres de date et code
+    def update_filters_and_table(self):
+        # Bloque les signaux pour éviter les mises à jour en cascade infinies
         self.ui.date_filter_combo.blockSignals(True)
         self.ui.commande_code_filter_combo.blockSignals(True)
 
-        unique_dates = sorted(list(set(cmd['date_commande'].strftime('%Y-%m-%d') for cmd in self.unvoiced_commandes)), reverse=True)
-        unique_codes = sorted(list(set(cmd['code_commande'] for cmd in self.unvoiced_commandes)))
+        # 1. Détermine la liste de commandes à considérer en fonction du client
+        client_id = self.ui.client_filter_combo.currentData()
+        potential_commandes = self.master_commandes
+        if client_id:
+            potential_commandes = [cmd for cmd in self.master_commandes if cmd['client_id'] == client_id]
 
-        self.ui.date_filter_combo.clear()
-        self.ui.date_filter_combo.addItem("Toutes les dates", userData=None)
-        for date in unique_dates:
-            self.ui.date_filter_combo.addItem(date)
+        # 2. Met à jour les options du filtre de date
+        self.update_date_filter_options(potential_commandes)
+        
+        # 3. Affine la liste en fonction de la date sélectionnée
+        date_selection = self.ui.date_filter_combo.currentData()
+        if date_selection:
+            potential_commandes = [cmd for cmd in potential_commandes if cmd['date_commande'] == date_selection]
 
-        self.ui.commande_code_filter_combo.clear()
-        self.ui.commande_code_filter_combo.addItem("Tous les codes", userData=None)
-        for code in unique_codes:
-            self.ui.commande_code_filter_combo.addItem(code)
+        # 4. Met à jour les options du filtre de code
+        self.update_code_filter_options(potential_commandes)
 
+        # 5. Affine la liste en fonction du code sélectionné
+        code_selection = self.ui.commande_code_filter_combo.currentData()
+        if code_selection:
+            potential_commandes = [cmd for cmd in potential_commandes if cmd['code_commande'] == code_selection]
+        
+        # 6. Met à jour la table avec le résultat final
+        self.populate_table(potential_commandes)
+
+        # Réactive les signaux
         self.ui.date_filter_combo.blockSignals(False)
         self.ui.commande_code_filter_combo.blockSignals(False)
 
-        # Remplir le tableau
-        for cmd in self.unvoiced_commandes:
+    def update_date_filter_options(self, commandes):
+        # Sauvegarde la sélection actuelle
+        current_selection = self.ui.date_filter_combo.currentData()
+        
+        self.ui.date_filter_combo.clear()
+        self.ui.date_filter_combo.addItem("Toutes les dates", userData=None)
+        
+        unique_dates = sorted(list(set(cmd['date_commande'] for cmd in commandes)), reverse=True)
+        for date in unique_dates:
+            self.ui.date_filter_combo.addItem(date.strftime('%Y-%m-%d'), userData=date)
+        
+        # Essaie de restaurer la sélection
+        if current_selection in unique_dates:
+            self.ui.date_filter_combo.setCurrentText(current_selection.strftime('%Y-%m-%d'))
+
+    def update_code_filter_options(self, commandes):
+        # Sauvegarde la sélection actuelle
+        current_selection = self.ui.commande_code_filter_combo.currentData()
+
+        self.ui.commande_code_filter_combo.clear()
+        self.ui.commande_code_filter_combo.addItem("Tous les codes", userData=None)
+        
+        unique_codes = sorted(list(set(cmd['code_commande'] for cmd in commandes)))
+        for code in unique_codes:
+            self.ui.commande_code_filter_combo.addItem(code, userData=code)
+            
+        # Essaie de restaurer la sélection
+        if current_selection in unique_codes:
+            self.ui.commande_code_filter_combo.setCurrentText(current_selection)
+
+    def populate_table(self, commandes):
+        self.table_model.removeRows(0, self.table_model.rowCount())
+        for cmd in commandes:
             row = [
                 QStandardItem(str(cmd['id'])),
                 QStandardItem(cmd['code_commande']),
@@ -90,34 +133,15 @@ class NewInvoiceDialog(QDialog):
                 QStandardItem(cmd['date_commande'].strftime('%Y-%m-%d')),
                 QStandardItem(f"{cmd['total_ttc']:.2f}")
             ]
-            self.model.appendRow(row)
-
+            self.table_model.appendRow(row)
         self.ui.commandes_table_view.resizeColumnsToContents()
-
-    def apply_filters(self):
-        client_id = self.ui.client_filter_combo.currentData()
-        date_str = self.ui.date_filter_combo.currentText() if self.ui.date_filter_combo.currentIndex() > 0 else None
-        code = self.ui.commande_code_filter_combo.currentText() if self.ui.commande_code_filter_combo.currentIndex() > 0 else None
-
-        for row in range(self.model.rowCount()):
-            row_client_id = next((cmd['client_id'] for cmd in self.unvoiced_commandes if str(cmd['id']) == self.model.item(row, 0).text()), None)
-            row_date_str = self.model.item(row, 3).text()
-            row_code = self.model.item(row, 1).text()
-
-            client_match = not client_id or row_client_id == client_id
-            date_match = not date_str or row_date_str == date_str
-            code_match = not code or row_code == code
-
-            self.ui.commandes_table_view.setRowHidden(row, not (client_match and date_match and code_match))
 
     def on_selection_changed(self, selected, deselected):
         is_selection = self.ui.commandes_table_view.selectionModel().hasSelection()
         self.generate_button.setEnabled(is_selection)
         if is_selection:
-            selected_row = self.ui.commandes_table_view.selectionModel().selectedRows()[0].row()
-            # Remonter à la source du modèle si un proxy est utilisé
-            source_index = self.proxy_model.mapToSource(self.proxy_model.index(selected_row, 0))
-            self.selected_commande_id = self.model.item(source_index.row(), 0).text()
+            selected_row = self.ui.commandes_table_view.selectionModel().selectedRows()[0]
+            self.selected_commande_id = self.table_model.item(selected_row.row(), 0).text()
         else:
             self.selected_commande_id = None
 

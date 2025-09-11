@@ -33,8 +33,8 @@ class InvoiceModule(QWidget):
         self.ui.setupUi(self)
 
         self.setup_buttons()
-        self.connect_signals()
         self.load_invoices()
+        self.connect_signals()
 
     def setup_buttons(self):
         # Désactiver les boutons qui nécessitent une sélection
@@ -220,7 +220,7 @@ class InvoiceModule(QWidget):
             "contact": f"{invoice_data['details']['client_email']} • {invoice_data['details']['client_phone']}"
         }
 
-        generator = InvoiceGenerator(template_dir="facturation_ci/templates")
+        generator = InvoiceGenerator()
         html_content = generator.render_html(
             company=company_data,
             client=client_data,
