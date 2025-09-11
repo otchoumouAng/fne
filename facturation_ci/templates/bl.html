@@ -12,8 +12,9 @@
   </style>
 </head>
 <body>
-  <h1>Bon de Livraison #{{ document.number }}</h1>
-  <p>Date: {{ document.date }}</p>
+  <h1>Bon de Livraison #{{ invoice.code_bl }}</h1>
+  <p>Date de création: {{ invoice.bl_date_creation.strftime('%Y-%m-%d %H:%M') }}</p>
+  <p>Facture associée: {{ invoice.code_facture }}</p>
 
   <h3>Expéditeur :</h3>
   <p>
@@ -49,7 +50,7 @@
   </table>
 
   <div style="margin-top:50px; font-size:12px; color:#6b7280">
-    Remarque: {{ document.notes }}
+    Ce document atteste de la livraison des biens ou services listés ci-dessus.
   </div>
 </body>
 </html>
