@@ -1,18 +1,24 @@
-import asyncio,os
+import os
+import asyncio
 from jinja2 import Environment, FileSystemLoader
 from playwright.async_api import async_playwright
 from num2words import num2words
 
 
-class InvoiceGenerator:
-    def __init__(self, template_file="invoice.html"):
+class PDFGenerator:
+    def __init__(self, template_file):
+        if not template_file:
+            raise ValueError("Un nom de fichier de template est requis.")
+
+        # Chemin absolu vers le répertoire du script actuel (core/)
         script_dir = os.path.dirname(os.path.abspath(__file__))
+        # Chemin vers le répertoire parent (facturation_ci/)
         parent_dir = os.path.dirname(script_dir)
+        # Chemin final vers le dossier des templates
         template_dir_path = os.path.join(parent_dir, 'templates')
-        
+
         self.env = Environment(loader=FileSystemLoader(template_dir_path))
         self.template = self.env.get_template(template_file)
-    
 
     @staticmethod
     def money(value, currency="XOF"):
@@ -24,7 +30,7 @@ class InvoiceGenerator:
         """Convertir un montant en toutes lettres (français)"""
         try:
             words = num2words(value, lang="fr")
-            return f"{words} {InvoiceGenerator.currency_to_words(currency)}"
+            return f"{words} {PDFGenerator.currency_to_words(currency)}"
         except NotImplementedError:
             return str(value)
 
@@ -128,7 +134,7 @@ async def main():
         ]
     }
 
-    generator = InvoiceGenerator()
+    generator = PDFGenerator(template_file="invoice.html")
     html = generator.render_html(
         company=data["header"]["company"],
         client=data["header"]["client"],

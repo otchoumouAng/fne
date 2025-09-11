@@ -10,11 +10,13 @@ from page._invoice import Ui_FacturePage # Le nom de classe dans le .py génér�
 from models.facture import FactureModel
 from models.client import ClientModel
 from models.company import CompanyInfoModel
+from models.bl import BordereauLivraisonModel
 import core.fne_client as fne_client
 # L'éditeur de facture est maintenant un dialogue de recherche de commande
 from new_invoice_dialog import NewInvoiceDialog
 from commande_editor_dialog import CommandeEditorDialog
-from core.invoice_generator import InvoiceGenerator
+from bl_viewer_dialog import BLViewerDialog
+from core.invoice_generator import PDFGenerator
 # Le worker n'est plus utilisé ici directement, mais dans le générateur
 from core.worker import Worker
 
@@ -27,6 +29,7 @@ class InvoiceModule(QWidget):
         self.model = FactureModel(self.db_manager)
         self.client_model = ClientModel(self.db_manager)
         self.company_model = CompanyInfoModel(self.db_manager)
+        self.bl_model = BordereauLivraisonModel(self.db_manager)
         self.thread = None
         self.worker = None
 
@@ -34,8 +37,8 @@ class InvoiceModule(QWidget):
         self.ui.setupUi(self)
 
         self.setup_buttons()
-        self.load_invoices()
         self.connect_signals()
+        self.load_invoices()
 
     def setup_buttons(self):
         # Désactiver les boutons qui nécessitent une sélection
@@ -222,7 +225,7 @@ class InvoiceModule(QWidget):
             "contact": f"{invoice_data['details']['client_email']} • {invoice_data['details']['client_phone']}"
         }
 
-        generator = InvoiceGenerator()
+        generator = PDFGenerator(template_file="invoice.html")
         html_content = generator.render_html(
             company=company_data,
             client=client_data,
@@ -238,7 +241,7 @@ class InvoiceModule(QWidget):
         self.worker.moveToThread(self.thread)
 
         self.thread.started.connect(self.worker.run)
-        self.worker.finished.connect(self.on_printing_finished)
+        self.worker.finished.connect(lambda: self.on_printing_finished(output_file))
         self.worker.error.connect(self.on_printing_error)
 
         # Nettoyage
@@ -251,12 +254,10 @@ class InvoiceModule(QWidget):
         self.ui.print_button.setEnabled(False)
         self.main_window.statusBar().showMessage(f"Génération du PDF pour la facture {invoice_data['details']['code_facture']}...")
 
-    def on_printing_finished(self, result):
-        # Le worker émet le résultat, mais pour generate_pdf, c'est None.
-        # On utilise le nom de fichier qu'on a déjà.
-        output_file = f"facture-{self.model.get_by_id_for_printing(self.get_selected_invoice_id())['details']['code_facture']}.pdf"
-
+    def on_printing_finished(self, output_file):
+        # Le nom du fichier est maintenant directement passé au slot.
         self.ui.print_button.setEnabled(True)
+        self.ui.bl_button.setEnabled(True) # Réactiver aussi le bouton BL
         self.main_window.statusBar().showMessage("Prêt", 3000)
 
         reply = QMessageBox.information(
@@ -288,7 +289,9 @@ class InvoiceModule(QWidget):
     def view_bl(self):
         invoice_id = self.get_selected_invoice_id()
         if not invoice_id: return
-        QMessageBox.information(self, "À implémenter", f"L'affichage du BL pour la facture {invoice_id} sera implémenté ici.")
+
+        dialog = BLViewerDialog(self.db_manager, facture_id=invoice_id, parent=self)
+        dialog.exec()
 
     def certify_bl(self):
         invoice_id = self.get_selected_invoice_id()
@@ -298,7 +301,56 @@ class InvoiceModule(QWidget):
     def print_bl(self):
         invoice_id = self.get_selected_invoice_id()
         if not invoice_id: return
-        QMessageBox.information(self, "À implémenter", f"L'impression du BL pour la facture {invoice_id} sera implémentée ici.")
+
+        invoice_data = self.model.get_by_id_for_printing(invoice_id)
+        if not invoice_data:
+            QMessageBox.critical(self, "Erreur", f"Impossible de charger les données de la facture {invoice_id} pour l'impression du BL.")
+            return
+
+        company_data = {
+            "name": "Mon Entreprise",
+            "address": "123 Rue de Test, Abidjan",
+            "contact": "contact@entreprise.ci",
+            "register": "RCCM CI-ABJ-2025-X-12345"
+        }
+
+        client_data = {
+            "name": invoice_data['details']['client_name'],
+            "address": invoice_data['details']['client_address'],
+            "contact": f"{invoice_data['details']['client_email']} • {invoice_data['details']['client_phone']}"
+        }
+
+        # Utilisation du template 'bl.html'
+        generator = PDFGenerator(template_file="bl.html")
+
+        # Le template bl.html attend probablement les mêmes données que invoice.html
+        # On peut les renommer pour plus de clarté si besoin, mais on réutilise la même structure.
+        html_content = generator.render_html(
+            company=company_data,
+            client=client_data,
+            invoice=invoice_data['details'], # Le template utilisera les champs dont il a besoin
+            details=invoice_data['items']
+        )
+
+        output_file = f"BL-{invoice_data['details']['code_facture']}.pdf"
+
+        self.thread = QThread()
+        self.worker = Worker(generator.generate_pdf, html_content, output_file)
+        self.worker.moveToThread(self.thread)
+
+        # On peut réutiliser les mêmes slots que pour l'impression de facture
+        self.thread.started.connect(self.worker.run)
+        self.worker.finished.connect(lambda: self.on_printing_finished(output_file)) # On passe le nom du fichier
+        self.worker.error.connect(self.on_printing_error)
+
+        self.worker.finished.connect(self.thread.quit)
+        self.worker.finished.connect(self.worker.deleteLater)
+        self.thread.finished.connect(self.thread.deleteLater)
+
+        self.thread.start()
+
+        self.ui.bl_button.setEnabled(False) # On désactive le bouton BL pendant l'opération
+        self.main_window.statusBar().showMessage(f"Génération du PDF pour le BL de la facture {invoice_data['details']['code_facture']}...")
 
     def handle_facture_double_click(self, index):
         facture_id = self.get_selected_invoice_id()

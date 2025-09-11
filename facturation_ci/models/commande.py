@@ -59,7 +59,7 @@ class CommandeModel:
             FROM commandes cmd
             JOIN clients c ON cmd.client_id = c.id
             LEFT JOIN factures f ON cmd.id = f.commande_id
-            WHERE f.id IS NULL
+            WHERE f.id IS NULL AND cmd.statut = 'terminee'
             ORDER BY cmd.date_commande DESC, cmd.id DESC
         """
         try:
