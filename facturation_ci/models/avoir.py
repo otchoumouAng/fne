@@ -32,13 +32,25 @@ class FactureAvoirModel:
             cursor.close()
 
     def get_by_id(self, avoir_id):
-        """Récupère les détails complets d'une facture d'avoir."""
+        """Récupère les détails complets d'un avoir, y compris les infos client."""
         connection = self.db_manager.get_connection()
         if not connection:
             return None
 
         cursor = connection.cursor(dictionary=True)
-        query = "SELECT * FROM factures_avoir WHERE id = %s"
+        query = """
+            SELECT
+                fa.*,
+                f.code_facture as code_facture_origine,
+                c.name as client_name,
+                c.address as client_address,
+                c.contact as client_contact
+            FROM factures_avoir fa
+            JOIN factures f ON fa.facture_origine_id = f.id
+            JOIN commandes cmd ON f.commande_id = cmd.id
+            JOIN clients c ON cmd.client_id = c.id
+            WHERE fa.id = %s
+        """
         try:
             cursor.execute(query, (avoir_id,))
             avoir_data = cursor.fetchone()

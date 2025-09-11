@@ -27,10 +27,12 @@ class AvoirViewerDialog(QDialog):
         # Remplir les détails du document
         self.ui.value_code_avoir.setText(avoir_data.get('code_avoir', 'N/A'))
         self.ui.value_date.setText(avoir_data.get('date_creation', '').strftime('%Y-%m-%d'))
+        self.ui.value_facture_origine.setText(avoir_data.get('code_facture_origine', 'N/A'))
 
-        # Pour le code de la facture d'origine, il faudrait une jointure dans get_by_id
-        # ou un appel supplémentaire. Pour l'instant, on laisse vide.
-        # self.ui.value_facture_origine.setText(...)
+        # Remplir les totaux
+        self.ui.value_total_ht.setText(f"{avoir_data.get('total_ht', 0):.2f}")
+        self.ui.value_total_tax.setText(f"{avoir_data.get('total_tva', 0):.2f}")
+        self.ui.value_total_ttc.setText(f"{avoir_data.get('total_ttc', 0):.2f}")
 
         # Remplir la table des articles
         self.setup_items_table(avoir_data.get('lignes_avoir', []))
