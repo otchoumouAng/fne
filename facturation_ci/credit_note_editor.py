@@ -98,7 +98,7 @@ class CreditNoteEditorDialog(QDialog):
 
     def get_data(self):
         """Retourne les données nécessaires pour créer l'enregistrement de l'avoir."""
-        if self.items_model.rowCount() == self.original_invoice_data['items']:
+        if self.items_model.rowCount() == len(self.original_invoice_data['items']):
              QMessageBox.warning(self, "Aucune modification", "Vous devez retirer au moins un article pour créer un avoir.")
              return None
 

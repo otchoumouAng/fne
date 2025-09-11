@@ -6,6 +6,52 @@ class FactureAvoirModel:
     def __init__(self, db_manager):
         self.db_manager = db_manager
 
+    def get_all(self):
+        """Récupère toutes les factures d'avoir avec quelques détails joints."""
+        connection = self.db_manager.get_connection()
+        if not connection:
+            return []
+
+        cursor = connection.cursor(dictionary=True)
+        # Jointure pour récupérer le code de la facture d'origine
+        query = """
+            SELECT
+                fa.id, fa.code_avoir, fa.date_creation, fa.total_ttc, fa.statut_fne,
+                f.code_facture as code_facture_origine
+            FROM factures_avoir fa
+            JOIN factures f ON fa.facture_origine_id = f.id
+            ORDER BY fa.date_creation DESC, fa.id DESC
+        """
+        try:
+            cursor.execute(query)
+            return cursor.fetchall()
+        except Error as e:
+            print(f"Erreur lors de la récupération des avoirs: {e}")
+            return []
+        finally:
+            cursor.close()
+
+    def get_by_id(self, avoir_id):
+        """Récupère les détails complets d'une facture d'avoir."""
+        connection = self.db_manager.get_connection()
+        if not connection:
+            return None
+
+        cursor = connection.cursor(dictionary=True)
+        query = "SELECT * FROM factures_avoir WHERE id = %s"
+        try:
+            cursor.execute(query, (avoir_id,))
+            avoir_data = cursor.fetchone()
+            # Le champ lignes_avoir est en JSON, on le décode
+            if avoir_data and 'lignes_avoir' in avoir_data:
+                avoir_data['lignes_avoir'] = json.loads(avoir_data['lignes_avoir'])
+            return avoir_data
+        except Error as e:
+            print(f"Erreur lors de la récupération de l'avoir ID {avoir_id}: {e}")
+            return None
+        finally:
+            cursor.close()
+
     def create(self, original_facture_id, code_facture_origine, avoir_items, totals):
         """
         Crée une nouvelle facture d'avoir dans la base de données.

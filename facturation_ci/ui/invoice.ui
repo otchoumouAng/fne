@@ -55,9 +55,12 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="credit_note_button">
+      <widget class="QToolButton" name="credit_note_button">
        <property name="text">
         <string>Facture d'Avoir</string>
+       </property>
+       <property name="popupMode">
+        <enum>QToolButton::MenuButtonPopup</enum>
        </property>
       </widget>
      </item>

@@ -18,6 +18,7 @@ from new_invoice_dialog import NewInvoiceDialog
 from commande_editor_dialog import CommandeEditorDialog
 from bl_viewer_dialog import BLViewerDialog
 from credit_note_editor import CreditNoteEditorDialog
+from credit_note_list_dialog import CreditNoteListDialog
 from core.invoice_generator import PDFGenerator
 # Le worker n'est plus utilisé ici directement, mais dans le générateur
 from core.worker import Worker
@@ -40,8 +41,8 @@ class InvoiceModule(QWidget):
         self.ui.setupUi(self)
 
         self.setup_buttons()
-        self.load_invoices()
         self.connect_signals()
+        self.load_invoices()
 
     def setup_buttons(self):
         # Désactiver les boutons qui nécessitent une sélection
@@ -57,6 +58,12 @@ class InvoiceModule(QWidget):
         self.print_bl_action = bl_menu.addAction("Imprimer le BL")
         self.ui.bl_button.setMenu(bl_menu)
 
+        # Configurer le menu pour le bouton Facture d'Avoir
+        avoir_menu = QMenu(self)
+        self.list_avoir_action = avoir_menu.addAction("Listing des avoirs")
+        self.create_avoir_action = avoir_menu.addAction("Créer un avoir")
+        self.ui.credit_note_button.setMenu(avoir_menu)
+
     def connect_signals(self):
         self.ui.new_invoice_button.clicked.connect(self.open_new_invoice_dialog)
         self.ui.table_view.selectionModel().selectionChanged.connect(self.on_selection_changed)
@@ -65,19 +72,26 @@ class InvoiceModule(QWidget):
         # Connecter les actions des boutons
         self.ui.certify_button.clicked.connect(self.certify_invoice)
         self.ui.print_button.clicked.connect(self.print_invoice)
-        self.ui.credit_note_button.clicked.connect(self.create_credit_note)
 
         # Connecter les actions du menu BL
         self.view_bl_action.triggered.connect(self.view_bl)
         self.certify_bl_action.triggered.connect(self.certify_bl)
         self.print_bl_action.triggered.connect(self.print_bl)
 
+        # Connecter les actions du menu Avoir
+        self.list_avoir_action.triggered.connect(self.open_credit_note_list)
+        self.create_avoir_action.triggered.connect(self.create_credit_note)
+
     def on_selection_changed(self, selected, deselected):
         is_selection = self.ui.table_view.selectionModel().hasSelection()
         self.ui.certify_button.setEnabled(is_selection)
         self.ui.print_button.setEnabled(is_selection)
         self.ui.bl_button.setEnabled(is_selection)
-        self.ui.credit_note_button.setEnabled(is_selection)
+
+        # Le bouton principal est toujours actif car "Listing" est toujours dispo
+        self.ui.credit_note_button.setEnabled(True)
+        # Mais l'action de création ne l'est que si une sélection est faite
+        self.create_avoir_action.setEnabled(is_selection)
 
     def load_invoices(self):
         invoices = self.model.get_all_with_details()
@@ -229,12 +243,14 @@ class InvoiceModule(QWidget):
         }
 
         generator = PDFGenerator(template_file="invoice.html")
-        html_content = generator.render_html(
-            company=company_data,
-            client=client_data,
-            invoice=invoice_data['details'],
-            details=invoice_data['items']
-        )
+
+        context = {
+            "company": company_data,
+            "client": client_data,
+            "invoice": invoice_data['details'],
+            "details": invoice_data['items']
+        }
+        html_content = generator.render_html(context)
 
         output_file = f"facture-{invoice_data['details']['code_facture']}.pdf"
 
@@ -343,14 +359,13 @@ class InvoiceModule(QWidget):
         # Utilisation du template 'bl.html'
         generator = PDFGenerator(template_file="bl.html")
 
-        # Le template bl.html attend probablement les mêmes données que invoice.html
-        # On peut les renommer pour plus de clarté si besoin, mais on réutilise la même structure.
-        html_content = generator.render_html(
-            company=company_data,
-            client=client_data,
-            invoice=invoice_data['details'], # Le template utilisera les champs dont il a besoin
-            details=invoice_data['items']
-        )
+        context = {
+            "company": company_data,
+            "client": client_data,
+            "invoice": invoice_data['details'], # Le template bl.html utilise aussi la variable 'invoice'
+            "details": invoice_data['items']
+        }
+        html_content = generator.render_html(context)
 
         output_file = f"BL-{invoice_data['details']['code_facture']}.pdf"
 
@@ -384,4 +399,8 @@ class InvoiceModule(QWidget):
 
         # Ouvre le dialogue de la commande en mode lecture seule
         dialog = CommandeEditorDialog(self.db_manager, commande_id=commande_id, read_only=True)
+        dialog.exec()
+
+    def open_credit_note_list(self):
+        dialog = CreditNoteListDialog(self.db_manager, self)
         dialog.exec()
