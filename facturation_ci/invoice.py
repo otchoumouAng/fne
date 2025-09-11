@@ -13,6 +13,7 @@ from models.company import CompanyInfoModel
 import core.fne_client as fne_client
 # L'éditeur de facture est maintenant un dialogue de recherche de commande
 from new_invoice_dialog import NewInvoiceDialog
+from commande_editor_dialog import CommandeEditorDialog
 from core.invoice_generator import InvoiceGenerator
 # Le worker n'est plus utilisé ici directement, mais dans le générateur
 from core.worker import Worker
@@ -53,6 +54,7 @@ class InvoiceModule(QWidget):
     def connect_signals(self):
         self.ui.new_invoice_button.clicked.connect(self.open_new_invoice_dialog)
         self.ui.table_view.selectionModel().selectionChanged.connect(self.on_selection_changed)
+        self.ui.table_view.doubleClicked.connect(self.handle_facture_double_click)
 
         # Connecter les actions des boutons
         self.ui.certify_button.clicked.connect(self.certify_invoice)
@@ -220,7 +222,7 @@ class InvoiceModule(QWidget):
             "contact": f"{invoice_data['details']['client_email']} • {invoice_data['details']['client_phone']}"
         }
 
-        generator = InvoiceGenerator(template_dir="facturation_ci/templates")
+        generator = InvoiceGenerator()
         html_content = generator.render_html(
             company=company_data,
             client=client_data,
@@ -297,3 +299,17 @@ class InvoiceModule(QWidget):
         invoice_id = self.get_selected_invoice_id()
         if not invoice_id: return
         QMessageBox.information(self, "À implémenter", f"L'impression du BL pour la facture {invoice_id} sera implémentée ici.")
+
+    def handle_facture_double_click(self, index):
+        facture_id = self.get_selected_invoice_id()
+        if facture_id is None:
+            return
+
+        commande_id = self.model.get_commande_id_from_facture(facture_id)
+        if commande_id is None:
+            QMessageBox.warning(self, "Erreur", f"Impossible de trouver la commande associée à la facture {facture_id}.")
+            return
+
+        # Ouvre le dialogue de la commande en mode lecture seule
+        dialog = CommandeEditorDialog(self.db_manager, commande_id=commande_id, read_only=True)
+        dialog.exec()
