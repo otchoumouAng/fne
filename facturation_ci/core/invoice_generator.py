@@ -5,7 +5,6 @@ from num2words import num2words
 
 
 class InvoiceGenerator:
-
     def __init__(self, template_file="invoice.html"):
         script_dir = os.path.dirname(os.path.abspath(__file__))
         parent_dir = os.path.dirname(script_dir)

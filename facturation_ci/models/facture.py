@@ -117,6 +117,24 @@ class FactureModel:
         finally:
             cursor.close()
 
+    def get_commande_id_from_facture(self, facture_id):
+        """Récupère l'ID de la commande associée à une facture."""
+        connection = self.db_manager.get_connection()
+        if not connection:
+            return None
+
+        cursor = connection.cursor()
+        query = "SELECT commande_id FROM factures WHERE id = %s"
+        try:
+            cursor.execute(query, (facture_id,))
+            result = cursor.fetchone()
+            return result[0] if result else None
+        except Error as e:
+            print(f"Erreur lors de la récupération de l'ID de commande pour la facture {facture_id}: {e}")
+            return None
+        finally:
+            cursor.close()
+
     def get_by_id_for_printing(self, facture_id):
         """
         Récupère les détails complets d'une facture et de sa commande
