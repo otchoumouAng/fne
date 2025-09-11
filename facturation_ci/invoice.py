@@ -19,7 +19,7 @@ from commande_editor_dialog import CommandeEditorDialog
 from bl_viewer_dialog import BLViewerDialog
 from credit_note_editor import CreditNoteEditorDialog
 from credit_note_list_dialog import CreditNoteListDialog
-from core.invoice_generator import PDFGenerator
+from core.pdf_generator import PDFGenerator
 # Le worker n'est plus utilisé ici directement, mais dans le générateur
 from core.worker import Worker
 
@@ -250,7 +250,7 @@ class InvoiceModule(QWidget):
             "invoice": invoice_data['details'],
             "details": invoice_data['items']
         }
-        html_content = generator.render_html(context)
+        html_content = generator.render_html(**context)
 
         output_file = f"facture-{invoice_data['details']['code_facture']}.pdf"
 
@@ -365,7 +365,7 @@ class InvoiceModule(QWidget):
             "invoice": invoice_data['details'], # Le template bl.html utilise aussi la variable 'invoice'
             "details": invoice_data['items']
         }
-        html_content = generator.render_html(context)
+        html_content = generator.render_html(**context)
 
         output_file = f"BL-{invoice_data['details']['code_facture']}.pdf"
 
