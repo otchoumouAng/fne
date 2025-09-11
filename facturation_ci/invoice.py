@@ -11,11 +11,13 @@ from models.facture import FactureModel
 from models.client import ClientModel
 from models.company import CompanyInfoModel
 from models.bl import BordereauLivraisonModel
+from models.avoir import FactureAvoirModel
 import core.fne_client as fne_client
 # L'éditeur de facture est maintenant un dialogue de recherche de commande
 from new_invoice_dialog import NewInvoiceDialog
 from commande_editor_dialog import CommandeEditorDialog
 from bl_viewer_dialog import BLViewerDialog
+from credit_note_editor import CreditNoteEditorDialog
 from core.invoice_generator import PDFGenerator
 # Le worker n'est plus utilisé ici directement, mais dans le générateur
 from core.worker import Worker
@@ -30,6 +32,7 @@ class InvoiceModule(QWidget):
         self.client_model = ClientModel(self.db_manager)
         self.company_model = CompanyInfoModel(self.db_manager)
         self.bl_model = BordereauLivraisonModel(self.db_manager)
+        self.avoir_model = FactureAvoirModel(self.db_manager)
         self.thread = None
         self.worker = None
 
@@ -282,7 +285,24 @@ class InvoiceModule(QWidget):
     def create_credit_note(self):
         invoice_id = self.get_selected_invoice_id()
         if not invoice_id: return
-        QMessageBox.information(self, "À implémenter", f"La création d'un avoir pour la facture {invoice_id} sera implémentée ici.")
+
+        # On pourrait ajouter une vérification pour ne pas créer plusieurs avoirs pour la même facture
+
+        dialog = CreditNoteEditorDialog(self.db_manager, facture_id=invoice_id, parent=self)
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            avoir_data = dialog.get_data()
+            if avoir_data:
+                avoir_id, error = self.avoir_model.create(
+                    original_facture_id=avoir_data['original_facture_id'],
+                    code_facture_origine=avoir_data['code_facture_origine'],
+                    avoir_items=avoir_data['avoir_items'],
+                    totals=avoir_data['totals']
+                )
+                if error:
+                    QMessageBox.critical(self, "Erreur de Création", f"Impossible de créer la facture d'avoir : {error}")
+                else:
+                    QMessageBox.information(self, "Succès", f"Facture d'avoir ID {avoir_id} créée avec succès.")
+                    # Ici, on pourrait rafraîchir une liste d'avoirs si elle existait
 
     # --- Méthodes pour le menu BL ---
 
