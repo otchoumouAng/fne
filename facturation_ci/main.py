@@ -1,6 +1,6 @@
 import sys
 import getpass
-from PyQt6.QtWidgets import QApplication, QMessageBox
+from PyQt6.QtWidgets import QApplication, QMessageBox, QDialog
 
 from core.db_manager import DBManager
 from auth_dialog import AuthDialog
