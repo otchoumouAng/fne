@@ -65,25 +65,25 @@
                 <tr>
                     <td>{{ item.description }}</td>
                     <td style="text-align: right;">{{ item.quantity }}</td>
-                    <td style="text-align: right;">{{ item.unit_price | money }}</td>
-                    <td style="text-align: right;">{{ (item.quantity * item.unit_price) | money }}</td>
+                    <td style="text-align: right;">{{ money(item.unit_price) }}</td>
+                    <td style="text-align: right;">{{ money(item.quantity * item.unit_price) }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
             <tfoot>
                 <tr>
                     <td colspan="3" style="text-align: right;">Sous-total HT</td>
-                    <td style="text-align: right;">{{ subtotal | money }}</td>
+                    <td style="text-align: right;">{{ money(subtotal) }}</td>
                 </tr>
                 {% for rate, amount in taxes.items() %}
                 <tr>
                     <td colspan="3" style="text-align: right;">TVA ({{ rate }}%)</td>
-                    <td style="text-align: right;">{{ amount | money }}</td>
+                    <td style="text-align: right;">{{ money(amount) }}</td>
                 </tr>
                 {% endfor %}
                 <tr>
                     <td colspan="3" style="text-align: right; font-size: 16px;"><strong>Total TTC</strong></td>
-                    <td style="text-align: right; font-size: 16px;"><strong>{{ grand_total | money }}</strong></td>
+                    <td style="text-align: right; font-size: 16px;"><strong>{{ money(grand_total) }}</strong></td>
                 </tr>
             </tfoot>
         </table>
