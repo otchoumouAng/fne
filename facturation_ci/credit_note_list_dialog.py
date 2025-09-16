@@ -110,6 +110,7 @@ class CreditNoteListDialog(QDialog):
         self.worker = Worker(generator.generate_pdf, html_content, output_file)
         self.worker.moveToThread(self.thread)
 
+        self.thread.started.connect(self.worker.run)
         self.worker.finished.connect(lambda: self.on_printing_finished(output_file))
         self.worker.error.connect(self.on_printing_error)
         self.worker.finished.connect(self.thread.quit)
