@@ -41,7 +41,7 @@ class CommandeModel:
 
     def get_all_unvoiced(self):
         """
-        Récupère toutes les commandes terminées qui n'ont pas encore été facturées.
+        Récupère toutes les commandes (en cours ou terminées) qui n'ont pas encore été facturées.
         """
         connection = self.db_manager.get_connection()
         if not connection:
@@ -59,7 +59,7 @@ class CommandeModel:
             FROM commandes cmd
             JOIN clients c ON cmd.client_id = c.id
             LEFT JOIN factures f ON cmd.id = f.commande_id
-            WHERE f.id IS NULL AND cmd.statut = 'terminee'
+            WHERE f.id IS NULL AND cmd.statut IN ('en_cours', 'terminee')
             ORDER BY cmd.date_commande DESC, cmd.id DESC
         """
         try:
