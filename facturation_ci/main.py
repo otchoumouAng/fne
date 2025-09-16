@@ -11,6 +11,7 @@ from dashboard import DashboardModule
 from client import ClientModule
 from product import ProductModule
 from invoice import InvoiceModule
+from commande import CommandeModule
 
 def main():
     """Point d'entrée principal de l'application refactorisée."""
@@ -54,14 +55,17 @@ def main():
     dashboard_module = DashboardModule(db_manager)
     main_window.set_module_widget(0, dashboard_module)
 
+    commande_module = CommandeModule(db_manager, user_data, main_window)
+    main_window.set_module_widget(1, commande_module)
+
     invoice_module = InvoiceModule(db_manager, user_data, main_window)
-    main_window.set_module_widget(1, invoice_module)
+    main_window.set_module_widget(2, invoice_module)
 
     client_module = ClientModule(db_manager)
-    main_window.set_module_widget(2, client_module)
+    main_window.set_module_widget(3, client_module)
 
     product_module = ProductModule(db_manager)
-    main_window.set_module_widget(3, product_module)
+    main_window.set_module_widget(4, product_module)
 
     # Les autres modules (Rapports, Paramètres) ne sont pas implémentés
     # Leurs placeholders resteront.

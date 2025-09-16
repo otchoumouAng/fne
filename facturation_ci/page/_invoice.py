@@ -1,4 +1,4 @@
-# Form implementation generated from reading ui file 'facturation_ci/ui/invoice.ui'
+# Form implementation generated from reading ui file 'ui/invoice.ui'
 #
 # Created by: PyQt6 UI code generator 6.9.1
 #
@@ -9,33 +9,40 @@
 from PyQt6 import QtCore, QtGui, QtWidgets
 
 
-class Ui_InvoicePage(object):
-    def setupUi(self, InvoicePage):
-        InvoicePage.setObjectName("InvoicePage")
-        InvoicePage.resize(800, 600)
-        self.verticalLayout = QtWidgets.QVBoxLayout(InvoicePage)
+class Ui_FacturePage(object):
+    def setupUi(self, FacturePage):
+        FacturePage.setObjectName("FacturePage")
+        FacturePage.resize(800, 600)
+        self.verticalLayout = QtWidgets.QVBoxLayout(FacturePage)
         self.verticalLayout.setObjectName("verticalLayout")
         self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setObjectName("horizontalLayout")
-        self.new_button = QtWidgets.QPushButton(parent=InvoicePage)
-        self.new_button.setObjectName("new_button")
-        self.horizontalLayout.addWidget(self.new_button)
-        self.edit_button = QtWidgets.QPushButton(parent=InvoicePage)
-        self.edit_button.setObjectName("edit_button")
-        self.horizontalLayout.addWidget(self.edit_button)
-        self.delete_button = QtWidgets.QPushButton(parent=InvoicePage)
-        self.delete_button.setObjectName("delete_button")
-        self.horizontalLayout.addWidget(self.delete_button)
-        self.print_button = QtWidgets.QPushButton(parent=InvoicePage)
-        self.print_button.setObjectName("print_button")
-        self.horizontalLayout.addWidget(self.print_button)
-        self.certify_button = QtWidgets.QPushButton(parent=InvoicePage)
+        self.new_invoice_button = QtWidgets.QPushButton(parent=FacturePage)
+        self.new_invoice_button.setObjectName("new_invoice_button")
+        self.horizontalLayout.addWidget(self.new_invoice_button)
+        self.line = QtWidgets.QFrame(parent=FacturePage)
+        self.line.setFrameShape(QtWidgets.QFrame.Shape.VLine)
+        self.line.setFrameShadow(QtWidgets.QFrame.Shadow.Sunken)
+        self.line.setObjectName("line")
+        self.horizontalLayout.addWidget(self.line)
+        self.certify_button = QtWidgets.QPushButton(parent=FacturePage)
         self.certify_button.setObjectName("certify_button")
         self.horizontalLayout.addWidget(self.certify_button)
+        self.print_button = QtWidgets.QPushButton(parent=FacturePage)
+        self.print_button.setObjectName("print_button")
+        self.horizontalLayout.addWidget(self.print_button)
+        self.bl_button = QtWidgets.QToolButton(parent=FacturePage)
+        self.bl_button.setPopupMode(QtWidgets.QToolButton.ToolButtonPopupMode.MenuButtonPopup)
+        self.bl_button.setObjectName("bl_button")
+        self.horizontalLayout.addWidget(self.bl_button)
+        self.credit_note_button = QtWidgets.QToolButton(parent=FacturePage)
+        self.credit_note_button.setPopupMode(QtWidgets.QToolButton.ToolButtonPopupMode.MenuButtonPopup)
+        self.credit_note_button.setObjectName("credit_note_button")
+        self.horizontalLayout.addWidget(self.credit_note_button)
         spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
         self.horizontalLayout.addItem(spacerItem)
         self.verticalLayout.addLayout(self.horizontalLayout)
-        self.table_view = QtWidgets.QTableView(parent=InvoicePage)
+        self.table_view = QtWidgets.QTableView(parent=FacturePage)
         self.table_view.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)
         self.table_view.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows)
         self.table_view.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.SingleSelection)
@@ -43,14 +50,24 @@ class Ui_InvoicePage(object):
         self.table_view.verticalHeader().setVisible(False)
         self.verticalLayout.addWidget(self.table_view)
 
-        self.retranslateUi(InvoicePage)
-        QtCore.QMetaObject.connectSlotsByName(InvoicePage)
+        self.retranslateUi(FacturePage)
+        QtCore.QMetaObject.connectSlotsByName(FacturePage)
 
-    def retranslateUi(self, InvoicePage):
+    def retranslateUi(self, FacturePage):
         _translate = QtCore.QCoreApplication.translate
-        InvoicePage.setWindowTitle(_translate("InvoicePage", "Gestion des Factures"))
-        self.new_button.setText(_translate("InvoicePage", "Nouvelle Facture"))
-        self.edit_button.setText(_translate("InvoicePage", "Modifier Facture"))
-        self.delete_button.setText(_translate("InvoicePage", "Supprimer Facture"))
-        self.print_button.setText(_translate("InvoicePage", "Imprimer"))
-        self.certify_button.setText(_translate("InvoicePage", "Certifier (FNE)"))
+        FacturePage.setWindowTitle(_translate("FacturePage", "Gestion des Factures"))
+        self.new_invoice_button.setText(_translate("FacturePage", "Nouvelle Facture"))
+        self.certify_button.setText(_translate("FacturePage", "Certifier (FNE)"))
+        self.print_button.setText(_translate("FacturePage", "Imprimer"))
+        self.bl_button.setText(_translate("FacturePage", "BL"))
+        self.credit_note_button.setText(_translate("FacturePage", "Facture d\'Avoir"))
+
+
+if __name__ == "__main__":
+    import sys
+    app = QtWidgets.QApplication(sys.argv)
+    FacturePage = QtWidgets.QWidget()
+    ui = Ui_FacturePage()
+    ui.setupUi(FacturePage)
+    FacturePage.show()
+    sys.exit(app.exec())

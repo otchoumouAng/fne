@@ -31,17 +31,22 @@ class AuthDialog(QDialog):
             # Do not close the dialog, let the user try again.
 
     def _check_credentials(self, username, password):
-        """Vérifie les identifiants de l'utilisateur dans la base de données."""
+        """Vérifie les identifiants et récupère les permissions de l'utilisateur."""
         connection = self.db_manager.get_connection()
         if not connection:
             return None
 
         cursor = connection.cursor(dictionary=True)
         query = """
-            SELECT u.id, u.username, u.password_hash, u.full_name, r.name as role
+            SELECT
+                u.id, u.username, u.password_hash, u.full_name, r.name as role,
+                GROUP_CONCAT(p.name) as permissions
             FROM users u
             JOIN roles r ON u.role_id = r.id
+            LEFT JOIN role_permissions rp ON r.id = rp.role_id
+            LEFT JOIN permissions p ON rp.permission_id = p.id
             WHERE u.username = %s AND u.is_active = TRUE
+            GROUP BY u.id
         """
         try:
             cursor.execute(query, (username,))
@@ -49,6 +54,11 @@ class AuthDialog(QDialog):
             if user and bcrypt.checkpw(password.encode('utf-8'), user['password_hash'].encode('utf-8')):
                 # Remove password hash before returning user data
                 del user['password_hash']
+                # Convert permission string to a set for efficient lookups
+                if user['permissions']:
+                    user['permissions'] = set(user['permissions'].split(','))
+                else:
+                    user['permissions'] = set()
                 return user
             return None
         except Exception as e:

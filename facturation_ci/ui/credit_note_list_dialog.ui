@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>FacturePage</class>
- <widget class="QWidget" name="FacturePage">
+ <class>CreditNoteListDialog</class>
+ <widget class="QDialog" name="CreditNoteListDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,32 +11,11 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Gestion des Factures</string>
+   <string>Listing des Factures d'Avoir</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
-     <item>
-      <widget class="QPushButton" name="new_invoice_button">
-       <property name="text">
-        <string>Nouvelle Facture</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="Line" name="line">
-       <property name="orientation">
-        <enum>Qt::Vertical</enum>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="certify_button">
-       <property name="text">
-        <string>Certifier (FNE)</string>
-       </property>
-      </widget>
-     </item>
      <item>
       <widget class="QPushButton" name="print_button">
        <property name="text">
@@ -45,22 +24,9 @@
       </widget>
      </item>
      <item>
-      <widget class="QToolButton" name="bl_button">
+      <widget class="QPushButton" name="certify_button">
        <property name="text">
-        <string>BL</string>
-       </property>
-       <property name="popupMode">
-        <enum>QToolButton::MenuButtonPopup</enum>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QToolButton" name="credit_note_button">
-       <property name="text">
-        <string>Facture d'Avoir</string>
-       </property>
-       <property name="popupMode">
-        <enum>QToolButton::MenuButtonPopup</enum>
+        <string>Certifier (FNE)</string>
        </property>
       </widget>
      </item>
@@ -80,7 +46,7 @@
     </layout>
    </item>
    <item>
-    <widget class="QTableView" name="table_view">
+    <widget class="QTableView" name="avoirs_table_view">
      <property name="editTriggers">
       <set>QAbstractItemView::NoEditTriggers</set>
      </property>
@@ -90,9 +56,13 @@
      <property name="selectionMode">
       <set>QAbstractItemView::SingleSelection</set>
      </property>
-     <attribute name="verticalHeaderVisible">
-      <bool>false</bool>
-     </attribute>
+    </widget>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="button_box">
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Close</set>
+     </property>
     </widget>
    </item>
   </layout>
