@@ -40,11 +40,15 @@ class PDFGenerator:
             return str(value)
 
     def render_html(self, **context):
-        # Calcule les totaux si des 'details' sont présents dans le contexte
         details = context.get('details', [])
+
+        # Initialiser les totaux pour qu'ils existent toujours dans le contexte
+        subtotal = 0
+        taxes = {}
+        grand_total = 0
+        total_tax = 0
+
         if details:
-            subtotal = 0
-            taxes = {}
             for item in details:
                 line_ht = item.get("quantity", 0) * item.get("unit_price", 0)
                 subtotal += line_ht
@@ -55,12 +59,12 @@ class PDFGenerator:
             total_tax = sum(taxes.values())
             grand_total = subtotal + total_tax
 
-            # Ajoute les totaux calculés et les helpers au contexte
-            context['subtotal'] = subtotal
-            context['taxes'] = taxes
-            context['total_tax'] = total_tax
-            context['grand_total'] = grand_total
-            context['grand_total_words'] = self.money_to_words(grand_total)
+        # Toujours ajouter les totaux au contexte pour éviter les UndefinedError
+        context['subtotal'] = subtotal
+        context['taxes'] = taxes
+        context['total_tax'] = total_tax
+        context['grand_total'] = grand_total
+        context['grand_total_words'] = self.money_to_words(grand_total)
 
         return self.template.render(**context)
 
