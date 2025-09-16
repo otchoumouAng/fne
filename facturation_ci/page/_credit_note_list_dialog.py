@@ -17,6 +17,9 @@ class Ui_CreditNoteListDialog(object):
         self.verticalLayout.setObjectName("verticalLayout")
         self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setObjectName("horizontalLayout")
+        self.print_button = QtWidgets.QPushButton(parent=CreditNoteListDialog)
+        self.print_button.setObjectName("print_button")
+        self.horizontalLayout.addWidget(self.print_button)
         self.certify_button = QtWidgets.QPushButton(parent=CreditNoteListDialog)
         self.certify_button.setObjectName("certify_button")
         self.horizontalLayout.addWidget(self.certify_button)
@@ -40,6 +43,7 @@ class Ui_CreditNoteListDialog(object):
     def retranslateUi(self, CreditNoteListDialog):
         _translate = QtCore.QCoreApplication.translate
         CreditNoteListDialog.setWindowTitle(_translate("CreditNoteListDialog", "Listing des Factures d\'Avoir"))
+        self.print_button.setText(_translate("CreditNoteListDialog", "Imprimer"))
         self.certify_button.setText(_translate("CreditNoteListDialog", "Certifier (FNE)"))
 
 

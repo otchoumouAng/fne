@@ -149,15 +149,17 @@ class FactureModel:
         try:
             # Récupérer les détails de la facture et de la commande
             query = """
-                SELECT
-                    f.*,
-                    cmd.code_commande, cmd.date_commande, cmd.total_ht, cmd.total_tva, cmd.total_ttc,
-                    c.id as client_id, c.name as client_name, c.address as client_address,
-                    c.email as client_email, c.phone as client_phone
-                FROM factures f
-                JOIN commandes cmd ON f.commande_id = cmd.id
-                JOIN clients c ON cmd.client_id = c.id
-                WHERE f.id = %s
+                SELECT 
+                f.*, 
+                bl.code_bl, bl.date_creation as bl_date_creation,
+                cmd.code_commande, cmd.date_commande, cmd.total_ht, cmd.total_tva, cmd.total_ttc,
+                c.id as client_id, c.name as client_name, c.address as client_address, 
+                c.email as client_email, c.phone as client_phone
+            FROM factures f
+            LEFT JOIN bordereaux_livraison bl ON f.id = bl.facture_id
+            JOIN commandes cmd ON f.commande_id = cmd.id
+            JOIN clients c ON cmd.client_id = c.id
+            WHERE f.id = %s
             """
             cursor.execute(query, (facture_id,))
             data['details'] = cursor.fetchone()

@@ -12,22 +12,20 @@ class NewInvoiceDialog(QDialog):
         self.db_manager = db_manager
         self.commande_model = CommandeModel(self.db_manager)
         self.client_model = ClientModel(self.db_manager)
-
+        
         self.ui = Ui_NewInvoiceDialog()
         self.ui.setupUi(self)
 
-        self.unvoiced_commandes = []
-        self.selected_commande_id = None
-
-        self.setup_model()
-        self.setup_filters()
-        self.setup_connections()
-
-        self.load_unvoiced_commandes()
-
-        # Ajouter le bouton "Générer" et le désactiver
+        # 1. Créer le bouton AVANT de connecter les signaux
         self.generate_button = self.ui.button_box.addButton("Générer la facture", QDialogButtonBox.ButtonRole.AcceptRole)
         self.generate_button.setEnabled(False)
+
+        self.master_commandes = []
+        self.selected_commande_id = None
+
+        self.setup_table_model()
+        self.load_and_populate_initial_data()
+        self.setup_connections()
 
     def setup_model(self):
         self.model = QStandardItemModel()
