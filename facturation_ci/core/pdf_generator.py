@@ -20,7 +20,12 @@ class PDFGenerator:
 
     @staticmethod
     def money(value, currency="XOF"):
-        return f"{value:,.0f} {currency}".replace(",", " ")
+        if value is None:
+            value = 0
+        try:
+            return f"{float(value):,.0f} {currency}".replace(",", " ")
+        except (ValueError, TypeError):
+            return f"{0:,.0f} {currency}".replace(",", " ")
 
     @staticmethod
     def currency_to_words(currency):
