@@ -15,7 +15,7 @@ class PDFGenerator:
         template_dir_path = os.path.join(parent_dir, 'templates')
 
         self.env = Environment(loader=FileSystemLoader(template_dir_path))
-        self.env.filters['money'] = self.money
+        self.env.globals['money'] = self.money
         self.template = self.env.get_template(template_file)
 
     @staticmethod

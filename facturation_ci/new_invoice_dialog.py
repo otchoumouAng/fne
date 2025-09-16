@@ -23,8 +23,9 @@ class NewInvoiceDialog(QDialog):
         self.master_commandes = []
         self.selected_commande_id = None
 
-        self.setup_table_model()
-        self.load_and_populate_initial_data()
+        self.setup_model()
+        self.setup_filters()
+        self.load_unvoiced_commandes()
         self.setup_connections()
 
     def setup_model(self):
