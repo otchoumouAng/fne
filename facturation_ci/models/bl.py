@@ -47,3 +47,28 @@ class BordereauLivraisonModel:
             return None
         finally:
             cursor.close()
+
+    def update_fne_status(self, bl_id, statut_fne, nim=None, qr_code=None, error_message=None):
+        """Met à jour le statut et les données FNE d'un BL."""
+        connection = self.db_manager.get_connection()
+        if not connection:
+            return False, "Erreur de connexion BDD"
+
+        cursor = connection.cursor()
+        query = """
+            UPDATE bordereaux_livraison
+            SET statut_fne = %s, fne_nim = %s, fne_qr_code = %s, fne_error_message = %s
+            WHERE id = %s
+        """
+        values = (statut_fne, nim, qr_code, error_message, bl_id)
+        try:
+            cursor.execute(query, values)
+            connection.commit()
+            print(f"Données FNE pour le BL {bl_id} mises à jour.")
+            return True, None
+        except Error as e:
+            print(f"Erreur lors de la mise à jour FNE pour le BL {bl_id}: {e}")
+            connection.rollback()
+            return False, str(e)
+        finally:
+            cursor.close()

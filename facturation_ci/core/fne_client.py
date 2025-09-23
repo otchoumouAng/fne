@@ -36,29 +36,48 @@ def certify_document(invoice_full_data: dict, company_info: dict, client_info: d
         "Accept": "application/json"
     }
 
-    # Construire le payload JSON selon la documentation FNE.
-    # C'est un exemple qui doit être validé et complété.
-    payload = {
-        "type": doc_type,
-        "ifuid": company_info.get("tax_id"),
-        "operator": {
-            "id": user_info.get("id"),
-            "name": user_info.get("full_name", "Opérateur")
-        },
-        "items": [
-            {
-                "name": item['description'],
-                "price": float(item['unit_price']),
-                "quantity": float(item['quantity'])
-            }
-            for item in invoice_full_data.get('items', [])
-        ],
-        "client": {
-            "name": client_info.get("name"),
-            "address": client_info.get("address")
-        },
-        # ... autres champs requis par la DGI (ex: `payment`, `invoice`)
-    }
+    # Construire le payload JSON en fonction du type de document.
+    if doc_type == "purchase":
+        # Payload spécifique pour les Bordereaux d'Achat (nos BLs)
+        payload = {
+            "invoiceType": "purchase",
+            "paymentMethod": "mobile-money", # Valeur par défaut, pourrait être configurable
+            "template": "B2B", # Valeur par défaut
+            "clientCompanyName": company_info.get("name"),
+            "clientPhone": company_info.get("phone"),
+            "clientEmail": company_info.get("email"),
+            "items": [
+                {
+                    "description": item['description'],
+                    "quantity": float(item['quantity']),
+                    "amount": float(item['unit_price']) # 'amount' est le prix unitaire ici
+                }
+                for item in invoice_full_data.get('items', [])
+            ]
+        }
+    else: # 'sale'
+        # Payload pour les factures de vente
+        payload = {
+            "type": doc_type,
+            "ifuid": company_info.get("tax_id"),
+            "operator": {
+                "id": user_info.get("id"),
+                "name": user_info.get("full_name", "Opérateur")
+            },
+            "items": [
+                {
+                    "name": item['description'],
+                    "price": float(item['unit_price']),
+                    "quantity": float(item['quantity'])
+                }
+                for item in invoice_full_data.get('items', [])
+            ],
+            "client": {
+                "name": client_info.get("name"),
+                "address": client_info.get("address")
+            },
+            # ... autres champs requis par la DGI (ex: `payment`, `invoice`)
+        }
 
     try:
         response = requests.post(endpoint, headers=headers, data=json.dumps(payload), timeout=20)
