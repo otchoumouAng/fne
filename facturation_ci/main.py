@@ -18,20 +18,13 @@ def main():
     app = QApplication(sys.argv)
 
     # --- Connexion à la base de données ---
-    # Pour le développement, on peut hardcoder le mot de passe ou utiliser des variables d'environnement
-    # db_password = getpass.getpass("Veuillez entrer le mot de passe de la base de données: ")
-    db_password = "Admin@1234" # REMPLACER pour la production
-    db_manager = DBManager(
-        host="127.0.0.1",
-        database="s_facture_plus", # Assurez-vous que c'est le bon nom de DB
-        user="root",
-        password=db_password
-    )
-
-    if not db_manager.get_connection():
+    try:
+        db_manager = DBManager()
+        # On force une première connexion pour vérifier que tout est OK avant de continuer.
+        db_manager.get_connection()
+    except ConnectionError as e:
         QMessageBox.critical(None, "Erreur de Base de Données",
-                             "Impossible de se connecter à la base de données. "
-                             "Vérifiez vos identifiants et que le service MySQL est bien démarré.\n"
+                             f"{e}\n\nVérifiez vos identifiants et que le service MySQL est bien démarré.\n"
                              "L'application va se fermer.")
         sys.exit(1)
 

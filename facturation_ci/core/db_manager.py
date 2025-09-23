@@ -10,23 +10,18 @@ class DBManager:
             cls._instance = super(DBManager, cls).__new__(cls)
         return cls._instance
 
-    def __init__(self, host=None, database=None, user=None, password=None):
+    def __init__(self):
         # The __init__ will be called every time, but we only connect once.
         if not hasattr(self, 'connection') or self.connection is None:
-            if not all([host, database, user, password]):
-                # This prevents re-initialization without parameters
-                self.connection = None
-                return
-
-            self.host = host
-            self.database = database
-            self.user = user
-            self.password = password
+            self.host = "127.0.0.1"
+            self.database = "s_facture_plus"
+            self.user = "root"
+            self.password = "Admin@1234"  # REMPLACER pour la production
             self.connection = None
-            self.connect()
+            # La connexion n'est pas établie ici, mais au premier appel de get_connection
 
     def connect(self):
-        """Établit la connexion à la base de données."""
+        """Établit la connexion à la base de données. Lève une ConnectionError en cas d'échec."""
         if self.connection and self.connection.is_connected():
             return
 
@@ -40,15 +35,13 @@ class DBManager:
             print("Connexion à la base de données réussie.")
         except Error as e:
             print(f"Erreur de connexion à la base de données : {e}")
-            # Dans une vraie application, on afficherait une boîte de dialogue d'erreur.
             self.connection = None
-            # On pourrait vouloir quitter l'application si la BDD est indisponible au démarrage.
-            # sys.exit(1)
+            raise ConnectionError(f"Impossible de se connecter à la base de données: {e}")
 
     def get_connection(self):
-        """Retourne l'objet de connexion. Tente de se reconnecter si nécessaire."""
+        """Retourne l'objet de connexion. Tente de se connecter si nécessaire."""
         if not self.connection or not self.connection.is_connected():
-            print("Connexion perdue. Tentative de reconnexion...")
+            # print("Connexion non établie ou perdue. Tentative de connexion...")
             self.connect()
         return self.connection
 
