@@ -191,17 +191,37 @@ class InvoiceModule(QWidget):
         self.ui.certify_button.setEnabled(False)
         self.main_window.statusBar().showMessage(f"Certification de la facture {invoice_data['details']['code_facture']} en cours...")
 
-    def on_certification_finished(self, invoice_id, fne_data):
+    def on_certification_finished(self, invoice_id, result_data):
         self.main_window.statusBar().showMessage("Prêt", 3000)
-        QMessageBox.information(self, "Succès", f"Facture certifiée avec succès.\nNIM: {fne_data['nim']}")
 
-        # Mettre à jour la base de données
+        fne_invoice_data = result_data.get('fne_invoice_data', {})
+        items_id_map = result_data.get('items_id_map', [])
+
+        nim = fne_invoice_data.get('nim')
+        qr_code = fne_invoice_data.get('qrCode')
+        fne_invoice_id = fne_invoice_data.get('id')
+
+        QMessageBox.information(self, "Succès", f"Facture certifiée avec succès.\nNIM: {nim}")
+
+        # 1. Mettre à jour le statut FNE (comme avant)
         self.model.update_fne_status(
             facture_id=invoice_id,
             statut_fne='success',
-            nim=fne_data['nim'],
-            qr_code=fne_data['qr_code']
+            nim=nim,
+            qr_code=qr_code
         )
+
+        # 2. Sauvegarder les identifiants FNE uniques
+        if fne_invoice_id and items_id_map:
+            success, error_msg = self.model.save_fne_ids(invoice_id, fne_invoice_id, items_id_map)
+            if not success:
+                # Log l'erreur ou l'affiche à l'utilisateur, car c'est critique pour les avoirs
+                QMessageBox.warning(self, "Erreur de Sauvegarde",
+                                    f"La certification a réussi mais les IDs FNE n'ont pas pu être sauvegardés : {error_msg}")
+        else:
+            QMessageBox.warning(self, "Données FNE Incomplètes",
+                                "La certification a réussi mais les IDs FNE nécessaires pour les avoirs sont manquants dans la réponse de l'API.")
+
         self.load_invoices()
         self.ui.certify_button.setEnabled(True)
 

@@ -93,6 +93,7 @@ def create_tables(cursor):
         "  `quantity` DECIMAL(10, 2) NOT NULL,"
         "  `unit_price` DECIMAL(15, 2) NOT NULL,"
         "  `tax_rate` DECIMAL(5, 2) NOT NULL,"
+        "  `fne_item_id` VARCHAR(255) NULL COMMENT 'ID unique de la ligne d''article retourné par FNE',"
         "  FOREIGN KEY (`commande_id`) REFERENCES `commandes`(`id`) ON DELETE CASCADE,"
         "  FOREIGN KEY (`product_id`) REFERENCES `products`(`id`)"
         ") ENGINE=InnoDB")
@@ -105,6 +106,7 @@ def create_tables(cursor):
         "  `date_facturation` DATE NOT NULL,"
         "  `statut_fne` ENUM('pending', 'success', 'failed') DEFAULT 'pending',"
         "  `fne_nim` VARCHAR(255) NULL,"
+        "  `fne_invoice_id` VARCHAR(255) NULL COMMENT 'ID unique de la facture retourné par FNE',"
         "  `fne_qr_code` TEXT NULL,"
         "  `fne_error_message` TEXT NULL,"
         "  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,"
