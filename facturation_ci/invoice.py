@@ -191,17 +191,37 @@ class InvoiceModule(QWidget):
         self.ui.certify_button.setEnabled(False)
         self.main_window.statusBar().showMessage(f"Certification de la facture {invoice_data['details']['code_facture']} en cours...")
 
-    def on_certification_finished(self, invoice_id, fne_data):
+    def on_certification_finished(self, invoice_id, result_data):
         self.main_window.statusBar().showMessage("Prêt", 3000)
-        QMessageBox.information(self, "Succès", f"Facture certifiée avec succès.\nNIM: {fne_data['nim']}")
 
-        # Mettre à jour la base de données
+        fne_invoice_data = result_data.get('fne_invoice_data', {})
+        items_id_map = result_data.get('items_id_map', [])
+
+        nim = fne_invoice_data.get('nim')
+        qr_code = fne_invoice_data.get('qrCode')
+        fne_invoice_id = fne_invoice_data.get('id')
+
+        QMessageBox.information(self, "Succès", f"Facture certifiée avec succès.\nNIM: {nim}")
+
+        # 1. Mettre à jour le statut FNE (comme avant)
         self.model.update_fne_status(
             facture_id=invoice_id,
             statut_fne='success',
-            nim=fne_data['nim'],
-            qr_code=fne_data['qr_code']
+            nim=nim,
+            qr_code=qr_code
         )
+
+        # 2. Sauvegarder les identifiants FNE uniques
+        if fne_invoice_id and items_id_map:
+            success, error_msg = self.model.save_fne_ids(invoice_id, fne_invoice_id, items_id_map)
+            if not success:
+                # Log l'erreur ou l'affiche à l'utilisateur, car c'est critique pour les avoirs
+                QMessageBox.warning(self, "Erreur de Sauvegarde",
+                                    f"La certification a réussi mais les IDs FNE n'ont pas pu être sauvegardés : {error_msg}")
+        else:
+            QMessageBox.warning(self, "Données FNE Incomplètes",
+                                "La certification a réussi mais les IDs FNE nécessaires pour les avoirs sont manquants dans la réponse de l'API.")
+
         self.load_invoices()
         self.ui.certify_button.setEnabled(True)
 
@@ -332,7 +352,79 @@ class InvoiceModule(QWidget):
     def certify_bl(self):
         invoice_id = self.get_selected_invoice_id()
         if not invoice_id: return
-        QMessageBox.information(self, "À implémenter", f"La certification FNE du BL pour la facture {invoice_id} sera implémentée ici.")
+
+        bl_data = self.bl_model.get_by_facture_id(invoice_id)
+        if not bl_data:
+            QMessageBox.critical(self, "Erreur", f"Impossible de charger les données du BL pour la facture {invoice_id}.")
+            return
+
+        if bl_data['details']['statut_fne'] == 'success':
+            QMessageBox.information(self, "Déjà certifié", "Ce BL a déjà été certifié avec succès.")
+            return
+
+        company_info = self.company_model.get_first()
+        if not company_info or not company_info.get('fne_api_key'):
+            QMessageBox.critical(self, "Erreur de configuration", "La clé d'API FNE pour l'entreprise n'est pas configurée.")
+            return
+
+        # Le document_type pour un BL est 'purchase'
+        bl_data['details']['document_type'] = 'purchase'
+
+        # Le client_info pour un 'purchase' n'est pas utilisé par le fne_client,
+        # qui prendra les infos de company_info. On peut passer un dict vide.
+        client_info = {}
+
+        self.thread = QThread()
+        self.worker = Worker(
+            fne_client.certify_document,
+            invoice_full_data=bl_data, # On passe les données du BL
+            company_info=company_info,
+            client_info=client_info, # Non utilisé pour 'purchase'
+            user_info=self.user_data,
+            api_key=company_info['fne_api_key']
+        )
+        self.worker.moveToThread(self.thread)
+
+        bl_id = bl_data['details']['bl_id']
+        self.worker.finished.connect(lambda result: self.on_bl_certification_finished(bl_id, result))
+        self.worker.error.connect(lambda error_msg: self.on_bl_certification_error(bl_id, error_msg))
+        self.thread.started.connect(self.worker.run)
+
+        self.worker.finished.connect(self.thread.quit)
+        self.worker.finished.connect(self.worker.deleteLater)
+        self.thread.finished.connect(self.thread.deleteLater)
+
+        self.thread.start()
+        self.ui.bl_button.setEnabled(False)
+        self.main_window.statusBar().showMessage(f"Certification du BL {bl_data['details']['code_bl']} en cours...")
+
+    def on_bl_certification_finished(self, bl_id, result_data):
+        self.main_window.statusBar().showMessage("Prêt", 3000)
+        fne_invoice_data = result_data.get('fne_invoice_data', {})
+        nim = fne_invoice_data.get('nim')
+
+        QMessageBox.information(self, "Succès", f"BL certifié avec succès.\nNIM: {nim}")
+
+        self.bl_model.update_fne_status(
+            bl_id=bl_id,
+            statut_fne='success',
+            nim=nim,
+            qr_code=fne_invoice_data.get('qrCode')
+        )
+        self.load_invoices() # Pour rafraîchir le statut dans la vue principale
+        self.ui.bl_button.setEnabled(True)
+
+    def on_bl_certification_error(self, bl_id, error_message):
+        self.main_window.statusBar().showMessage("Erreur de certification", 5000)
+        QMessageBox.critical(self, "Erreur de Certification FNE", error_message)
+
+        self.bl_model.update_fne_status(
+            bl_id=bl_id,
+            statut_fne='failed',
+            error_message=error_message
+        )
+        self.load_invoices()
+        self.ui.bl_button.setEnabled(True)
 
     def print_bl(self):
         invoice_id = self.get_selected_invoice_id()

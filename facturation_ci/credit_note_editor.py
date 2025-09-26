@@ -25,9 +25,10 @@ class CreditNoteEditorDialog(QDialog):
 
         # Configurer le modèle de la table
         self.items_model = QStandardItemModel()
-        self.items_model.setHorizontalHeaderLabels(['ID Produit', 'Description', 'Quantité', 'Prix U.', 'Taux TVA'])
+        self.items_model.setHorizontalHeaderLabels(['ID Commande Item', 'ID Produit', 'Description', 'Quantité', 'Prix U.', 'Taux TVA'])
         self.ui.items_table_view.setModel(self.items_model)
-        self.ui.items_table_view.setColumnHidden(0, True)
+        self.ui.items_table_view.setColumnHidden(0, True) # Masquer ID Commande Item
+        self.ui.items_table_view.setColumnHidden(1, True) # Masquer ID Produit
 
     def setup_connections(self):
         self.ui.remove_item_button.clicked.connect(self.remove_selected_item)
@@ -51,6 +52,7 @@ class CreditNoteEditorDialog(QDialog):
         # Remplir la table avec les articles d'origine
         for item in items:
             row = [
+                QStandardItem(str(item['id'])), # ID Commande Item
                 QStandardItem(str(item['product_id'])),
                 QStandardItem(item['description']),
                 QStandardItem(str(item['quantity'])),
@@ -105,11 +107,12 @@ class CreditNoteEditorDialog(QDialog):
         avoir_items = []
         for row in range(self.items_model.rowCount()):
             item = {
-                'product_id': int(self.items_model.item(row, 0).text()),
-                'description': self.items_model.item(row, 1).text(),
-                'quantity': float(self.items_model.item(row, 2).text()),
-                'unit_price': float(self.items_model.item(row, 3).text()),
-                'tax_rate': float(self.items_model.item(row, 4).text())
+                'commande_item_id': int(self.items_model.item(row, 0).text()),
+                'product_id': int(self.items_model.item(row, 1).text()),
+                'description': self.items_model.item(row, 2).text(),
+                'quantity': float(self.items_model.item(row, 3).text()),
+                'unit_price': float(self.items_model.item(row, 4).text()),
+                'tax_rate': float(self.items_model.item(row, 5).text())
             }
             avoir_items.append(item)
 

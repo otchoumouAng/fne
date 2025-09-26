@@ -96,6 +96,22 @@ class CommandeModel:
         finally:
             cursor.close()
 
+    def get_items_with_fne_id(self, commande_id):
+        """Récupère les lignes d'une commande avec leur ID FNE."""
+        connection = self.db_manager.get_connection()
+        if not connection:
+            return []
+        cursor = connection.cursor(dictionary=True)
+        query = "SELECT id, product_id, description, fne_item_id FROM commande_items WHERE commande_id = %s"
+        try:
+            cursor.execute(query, (commande_id,))
+            return cursor.fetchall()
+        except Error as e:
+            print(f"Erreur lors de la récupération des items FNE pour la commande {commande_id}: {e}")
+            return []
+        finally:
+            cursor.close()
+
     def _generate_commande_code(self, cursor):
         """Génère un code de commande unique au format AAMMJJSEQ."""
         today = datetime.now()

@@ -117,6 +117,53 @@ class FactureModel:
         finally:
             cursor.close()
 
+    def save_fne_ids(self, facture_id, fne_invoice_id, items_fne_ids):
+        """
+        Sauvegarde les identifiants FNE uniques pour une facture et ses lignes d'articles.
+        `items_fne_ids` est une liste de tuples: [(fne_item_id, local_item_id), ...].
+        """
+        connection = self.db_manager.get_connection()
+        if not connection:
+            return False, "Erreur de connexion BDD"
+
+        cursor = connection.cursor()
+        try:
+            # 1. Mettre à jour la facture avec son ID FNE
+            update_facture_query = "UPDATE factures SET fne_invoice_id = %s WHERE id = %s"
+            cursor.execute(update_facture_query, (fne_invoice_id, facture_id))
+
+            # 2. Mettre à jour chaque ligne de commande avec son ID FNE
+            update_item_query = "UPDATE commande_items SET fne_item_id = %s WHERE id = %s"
+            cursor.executemany(update_item_query, items_fne_ids)
+
+            connection.commit()
+            print(f"IDs FNE pour la facture {facture_id} sauvegardés avec succès.")
+            return True, None
+        except Error as e:
+            connection.rollback()
+            error_message = f"Erreur lors de la sauvegarde des IDs FNE pour la facture {facture_id}: {e}"
+            print(error_message)
+            return False, error_message
+        finally:
+            cursor.close()
+
+    def get_fne_invoice_id(self, facture_id):
+        """Récupère l'ID FNE d'une facture."""
+        connection = self.db_manager.get_connection()
+        if not connection:
+            return None
+        cursor = connection.cursor()
+        query = "SELECT fne_invoice_id FROM factures WHERE id = %s"
+        try:
+            cursor.execute(query, (facture_id,))
+            result = cursor.fetchone()
+            return result[0] if result else None
+        except Error as e:
+            print(f"Erreur lors de la récupération de l'ID FNE pour la facture {facture_id}: {e}")
+            return None
+        finally:
+            cursor.close()
+
     def get_commande_id_from_facture(self, facture_id):
         """Récupère l'ID de la commande associée à une facture."""
         connection = self.db_manager.get_connection()
