@@ -80,6 +80,9 @@ def certify_document(invoice_full_data: dict, company_info: dict, client_info: d
         }
 
     try:
+        print("--- Payload FNE ---")
+        print(json.dumps(payload, indent=2))
+        print("---------------------")
         response = requests.post(endpoint, headers=headers, data=json.dumps(payload), timeout=20)
         response.raise_for_status()
 
