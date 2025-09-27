@@ -41,42 +41,45 @@ def certify_document(invoice_full_data: dict, company_info: dict, client_info: d
         # Payload spécifique pour les Bordereaux d'Achat (nos BLs)
         payload = {
             "invoiceType": "purchase",
-            "paymentMethod": "mobile-money", # Valeur par défaut, pourrait être configurable
-            "template": "B2B", # Valeur par défaut
+            "paymentMethod": "mobile-money",  # TODO: Rendre configurable
+            "template": "B2B",  # TODO: Rendre configurable
+            "clientNcc": company_info.get("tax_id"),
             "clientCompanyName": company_info.get("name"),
+            "pointOfSale": company_info.get("point_of_sale", "Default PoS"),
+            "establishment": company_info.get("name"),
             "clientPhone": company_info.get("phone"),
             "clientEmail": company_info.get("email"),
             "items": [
                 {
                     "description": item['description'],
                     "quantity": float(item['quantity']),
-                    "amount": float(item['unit_price']) # 'amount' est le prix unitaire ici
+                    # Le montant est le total de la ligne (quantité * prix unitaire)
+                    "amount": float(item['quantity']) * float(item['unit_price'])
                 }
                 for item in invoice_full_data.get('items', [])
             ]
         }
-    else: # 'sale'
-        # Payload pour les factures de vente
+    else:  # 'sale'
+        # Payload pour les factures de vente, conforme à la nouvelle spécification
         payload = {
-            "type": doc_type,
-            "ifuid": company_info.get("tax_id"),
-            "operator": {
-                "id": user_info.get("id"),
-                "name": user_info.get("full_name", "Opérateur")
-            },
+            "invoiceType": doc_type,
+            "paymentMethod": "cash",  # TODO: Rendre configurable
+            "template": "B2B",  # TODO: Rendre configurable
+            "clientNcc": client_info.get("ncc"),
+            "clientCompanyName": client_info.get("name"),
+            "pointOfSale": company_info.get("point_of_sale", "Default PoS"), # Utilise une valeur par défaut
+            "establishment": company_info.get("name"),
+            "clientPhone": client_info.get("phone"),
+            "clientEmail": client_info.get("email"),
             "items": [
                 {
-                    "name": item['description'],
-                    "price": float(item['unit_price']),
-                    "quantity": float(item['quantity'])
+                    "description": item['description'],
+                    "quantity": float(item['quantity']),
+                    # Le montant est le total de la ligne (quantité * prix unitaire)
+                    "amount": float(item['quantity']) * float(item['unit_price'])
                 }
                 for item in invoice_full_data.get('items', [])
-            ],
-            "client": {
-                "name": client_info.get("name"),
-                "address": client_info.get("address")
-            },
-            # ... autres champs requis par la DGI (ex: `payment`, `invoice`)
+            ]
         }
 
     try:

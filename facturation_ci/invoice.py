@@ -171,7 +171,13 @@ class InvoiceModule(QWidget):
         # Note: 'document_type' doit être dans les détails de la facture/commande
         # Pour l'exemple, on le met en dur.
         invoice_data['details']['document_type'] = 'sale'
-        client_info = {'name': invoice_data['details']['client_name'], 'address': invoice_data['details']['client_address']}
+        client_info = {
+            "name": invoice_data['details'].get('client_name'),
+            "address": invoice_data['details'].get('client_address'),
+            "ncc": invoice_data['details'].get('client_ncc'),
+            "phone": invoice_data['details'].get('client_phone'),
+            "email": invoice_data['details'].get('client_email')
+        }
 
         self.is_task_running = True
         self.thread = QThread()
