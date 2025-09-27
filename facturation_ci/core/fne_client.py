@@ -122,11 +122,17 @@ def certify_document(invoice_full_data: dict, company_info: dict, client_info: d
         raise FNEClientError(f"Réponse invalide de l'API FNE: {error_msg}", response.status_code)
 
     except requests.exceptions.HTTPError as e:
+        print("--- FNE API HTTP Error Response ---")
+        print(f"Status Code: {e.response.status_code}")
+        print(f"Response Body: {e.response.text}")
+        print("-----------------------------------")
         error_details = "Détail de l'erreur non disponible."
         try:
+            # Essayer de parser le JSON pour un message d'erreur structuré
             error_details = e.response.json().get('message', e.response.text)
         except json.JSONDecodeError:
-            pass
+            # Si ce n'est pas du JSON, utiliser le texte brut de la réponse
+            error_details = e.response.text
         raise FNEClientError(f"Erreur API FNE ({e.response.status_code}): {error_details}", e.response.status_code)
 
     except requests.exceptions.RequestException as e:
