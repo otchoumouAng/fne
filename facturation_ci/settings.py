@@ -27,6 +27,7 @@ class SettingsModule(QWidget):
             self.ui.phone_edit.setText(company_info.get('phone', ''))
             self.ui.email_edit.setText(company_info.get('email', ''))
             self.ui.tax_id_edit.setText(company_info.get('ncc', ''))
+            self.ui.pos_edit.setText(company_info.get('point_of_sale', ''))
             self.ui.fne_api_key_edit.setText(company_info.get('fne_api_key', ''))
         else:
             print("Aucune information d'entreprise trouvée dans la base de données.")
@@ -39,6 +40,7 @@ class SettingsModule(QWidget):
             'phone': self.ui.phone_edit.text(),
             'email': self.ui.email_edit.text(),
             'ncc': self.ui.tax_id_edit.text(),
+            'point_of_sale': self.ui.pos_edit.text(),
             'fne_api_key': self.ui.fne_api_key_edit.text()
         }
         return company_data
