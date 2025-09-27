@@ -201,7 +201,7 @@ class FactureModel:
                 bl.code_bl, bl.date_creation as bl_date_creation,
                 cmd.code_commande, cmd.date_commande, cmd.total_ht, cmd.total_tva, cmd.total_ttc,
                 c.id as client_id, c.name as client_name, c.address as client_address, 
-                c.email as client_email, c.phone as client_phone, c.tax_id as client_ncc
+                c.email as client_email, c.phone as client_phone, c.ncc as client_ncc
             FROM factures f
             LEFT JOIN bordereaux_livraison bl ON f.id = bl.facture_id
             JOIN commandes cmd ON f.commande_id = cmd.id

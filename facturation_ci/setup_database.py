@@ -54,6 +54,7 @@ def create_tables(cursor):
         "  `address` TEXT,"
         "  `email` VARCHAR(100),"
         "  `phone` VARCHAR(50),"
+        "  `ncc` VARCHAR(100) NULL COMMENT 'N° de contribuable',"
         "  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
         ") ENGINE=InnoDB")
 
