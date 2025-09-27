@@ -51,6 +51,7 @@ def certify_document(invoice_full_data: dict, company_info: dict, client_info: d
             "clientEmail": company_info.get("email"),
             "items": [
                 {
+                    "reference": str(item.get('id')),
                     "description": item['description'],
                     "quantity": float(item['quantity']),
                     # Le montant est le total de la ligne (quantité * prix unitaire)
@@ -74,6 +75,7 @@ def certify_document(invoice_full_data: dict, company_info: dict, client_info: d
             "clientEmail": client_info.get("email"),
             "items": [
                 {
+                    "reference": str(item.get('id')),
                     "description": item['description'],
                     "quantity": float(item['quantity']),
                     # Le montant est le total de la ligne (quantité * prix unitaire)
