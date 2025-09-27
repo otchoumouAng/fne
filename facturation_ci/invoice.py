@@ -210,12 +210,10 @@ class InvoiceModule(QWidget):
         self.is_task_running = False
         self.main_window.statusBar().showMessage("Prêt", 3000)
 
-        fne_invoice_data = result_data.get('fne_invoice_data', {})
+        nim = result_data.get('nim')
+        qr_code = result_data.get('qr_code')
+        fne_invoice_id = result_data.get('fne_invoice_id')
         items_id_map = result_data.get('items_id_map', [])
-
-        nim = fne_invoice_data.get('nim')
-        qr_code = fne_invoice_data.get('qrCode')
-        fne_invoice_id = fne_invoice_data.get('id')
 
         QMessageBox.information(self, "Succès", f"Facture certifiée avec succès.\nNIM: {nim}")
 
@@ -430,8 +428,9 @@ class InvoiceModule(QWidget):
     def on_bl_certification_finished(self, bl_id, result_data):
         self.is_task_running = False
         self.main_window.statusBar().showMessage("Prêt", 3000)
-        fne_invoice_data = result_data.get('fne_invoice_data', {})
-        nim = fne_invoice_data.get('nim')
+
+        nim = result_data.get('nim')
+        qr_code = result_data.get('qr_code')
 
         QMessageBox.information(self, "Succès", f"BL certifié avec succès.\nNIM: {nim}")
 
@@ -439,7 +438,7 @@ class InvoiceModule(QWidget):
             bl_id=bl_id,
             statut_fne='success',
             nim=nim,
-            qr_code=fne_invoice_data.get('qrCode')
+            qr_code=qr_code
         )
         self.load_invoices() # Pour rafraîchir le statut dans la vue principale
         self.ui.bl_button.setEnabled(True)
