@@ -158,21 +158,15 @@ class InvoiceModule(QWidget):
             QMessageBox.critical(self, "Erreur", f"Impossible de charger les données de la facture {invoice_id}.")
             return
 
-        # Valider que le NCC du client est présent avant de continuer
-        client_ncc = invoice_data['details'].get('client_ncc')
-        if not client_ncc:
-            QMessageBox.critical(self, "Données Client Manquantes",
-                                 "Le numéro de contribuable (NCC) du client est manquant.\n"
-                                 "Veuillez le renseigner dans la fiche client avant de certifier la facture.")
-            return
-
         if invoice_data['details']['statut_fne'] == 'success':
             QMessageBox.information(self, "Déjà certifiée", "Cette facture a déjà été certifiée avec succès.")
             return
 
         company_info = self.company_model.get_first()
-        if not company_info or not company_info.get('fne_api_key'):
-            QMessageBox.critical(self, "Erreur de configuration", "La clé d'API FNE pour l'entreprise n'est pas configurée.")
+        if not company_info or not company_info.get('fne_api_key') or not company_info.get('ncc'):
+            QMessageBox.critical(self, "Erreur de configuration",
+                                 "Les informations de l'entreprise sont incomplètes.\n"
+                                 "Veuillez renseigner le NCC et la clé d'API FNE dans les paramètres.")
             return
 
         # Le FNE client attend des infos spécifiques, on les prépare
