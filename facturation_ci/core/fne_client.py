@@ -54,7 +54,8 @@ def certify_document(invoice_full_data: dict, company_info: dict, client_info: d
                     "description": item['description'],
                     "quantity": float(item['quantity']),
                     # Le montant est le total de la ligne (quantité * prix unitaire)
-                    "amount": float(item['quantity']) * float(item['unit_price'])
+                    "amount": float(item['quantity']) * float(item['unit_price']),
+                    "taxes": ["TVA"]
                 }
                 for item in invoice_full_data.get('items', [])
             ]
@@ -76,7 +77,8 @@ def certify_document(invoice_full_data: dict, company_info: dict, client_info: d
                     "description": item['description'],
                     "quantity": float(item['quantity']),
                     # Le montant est le total de la ligne (quantité * prix unitaire)
-                    "amount": float(item['quantity']) * float(item['unit_price'])
+                    "amount": float(item['quantity']) * float(item['unit_price']),
+                    "taxes": ["TVA"]
                 }
                 for item in invoice_full_data.get('items', [])
             ]
