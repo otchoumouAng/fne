@@ -158,6 +158,14 @@ class InvoiceModule(QWidget):
             QMessageBox.critical(self, "Erreur", f"Impossible de charger les données de la facture {invoice_id}.")
             return
 
+        # Valider que le NCC du client est présent avant de continuer
+        client_ncc = invoice_data['details'].get('client_ncc')
+        if not client_ncc:
+            QMessageBox.critical(self, "Données Client Manquantes",
+                                 "Le numéro de contribuable (NCC) du client est manquant.\n"
+                                 "Veuillez le renseigner dans la fiche client avant de certifier la facture.")
+            return
+
         if invoice_data['details']['statut_fne'] == 'success':
             QMessageBox.information(self, "Déjà certifiée", "Cette facture a déjà été certifiée avec succès.")
             return
