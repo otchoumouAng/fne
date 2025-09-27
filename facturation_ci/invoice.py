@@ -217,24 +217,18 @@ class InvoiceModule(QWidget):
 
         QMessageBox.information(self, "Succès", f"Facture certifiée avec succès.\nNIM: {nim}")
 
-        # 1. Mettre à jour le statut FNE (comme avant)
-        self.model.update_fne_status(
+        # Sauvegarder tous les résultats de la certification de manière atomique
+        success, error_msg = self.model.save_certification_results(
             facture_id=invoice_id,
-            statut_fne='success',
             nim=nim,
-            qr_code=qr_code
+            qr_code=qr_code,
+            fne_invoice_id=fne_invoice_id,
+            items_id_map=items_id_map
         )
 
-        # 2. Sauvegarder les identifiants FNE uniques
-        if fne_invoice_id and items_id_map:
-            success, error_msg = self.model.save_fne_ids(invoice_id, fne_invoice_id, items_id_map)
-            if not success:
-                # Log l'erreur ou l'affiche à l'utilisateur, car c'est critique pour les avoirs
-                QMessageBox.warning(self, "Erreur de Sauvegarde",
-                                    f"La certification a réussi mais les IDs FNE n'ont pas pu être sauvegardés : {error_msg}")
-        else:
-            QMessageBox.warning(self, "Données FNE Incomplètes",
-                                "La certification a réussi mais les IDs FNE nécessaires pour les avoirs sont manquants dans la réponse de l'API.")
+        if not success:
+            QMessageBox.critical(self, "Erreur de Sauvegarde",
+                                 f"La certification a réussi mais les résultats n'ont pas pu être sauvegardés en base de données : {error_msg}")
 
         self.load_invoices()
         self.ui.certify_button.setEnabled(True)
@@ -245,9 +239,8 @@ class InvoiceModule(QWidget):
         QMessageBox.critical(self, "Erreur de Certification FNE", error_message)
 
         # Mettre à jour la base de données avec le statut d'échec
-        self.model.update_fne_status(
+        self.model.save_certification_error(
             facture_id=invoice_id,
-            statut_fne='failed',
             error_message=error_message
         )
         self.load_invoices()
