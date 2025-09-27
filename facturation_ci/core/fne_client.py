@@ -67,7 +67,7 @@ def certify_document(invoice_full_data: dict, company_info: dict, client_info: d
             "invoiceType": doc_type,
             "paymentMethod": "cash",  # TODO: Rendre configurable
             "template": "B2B",  # TODO: Rendre configurable
-            "clientNcc": client_info.get("ncc"),
+            "clientNcc": company_info.get("ncc"),
             "clientCompanyName": client_info.get("name"),
             "pointOfSale": company_info.get("point_of_sale", "Default PoS"), # Utilise une valeur par défaut
             "establishment": company_info.get("name"),
