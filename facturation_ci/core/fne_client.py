@@ -95,16 +95,17 @@ def certify_document(invoice_full_data: dict, company_info: dict, client_info: d
 
         response_data = response.json()
 
-        if response_data.get("status") == "success" and "data" in response_data:
-            fne_data = response_data["data"]
-            fne_invoice_data = fne_data.get("invoice", {})
+        # Une réponse de succès contient les clés 'reference' et 'token'
+        if "reference" in response_data and "token" in response_data:
+            nim = response_data.get("reference")
+            qr_code = response_data.get("token")
+
+            fne_invoice_data = response_data.get("invoice", {})
+            fne_invoice_id = fne_invoice_data.get("id")
             fne_items = fne_invoice_data.get("items", [])
 
-            # On suppose que l'ordre des articles est conservé entre la requête et la réponse.
-            # On récupère les IDs locaux des articles qu'on a envoyés.
+            # Mapper les IDs FNE des articles avec les IDs locaux
             local_item_ids = [item['id'] for item in invoice_full_data.get('items', [])]
-
-            # On crée une map entre les IDs FNE et les IDs locaux.
             items_id_map = []
             if len(fne_items) == len(local_item_ids):
                 items_id_map = [
@@ -112,14 +113,17 @@ def certify_document(invoice_full_data: dict, company_info: dict, client_info: d
                     for fne_item, local_item_id in zip(fne_items, local_item_ids)
                 ]
 
-            # On retourne toutes les données nécessaires au contrôleur.
+            # Retourner un dictionnaire plat avec les données nécessaires
             return {
-                "fne_invoice_data": fne_invoice_data,
+                "nim": nim,
+                "qr_code": qr_code,
+                "fne_invoice_id": fne_invoice_id,
                 "items_id_map": items_id_map
             }
 
+        # Si la structure de la réponse n'est pas celle attendue, lever une erreur.
         error_msg = response_data.get('message', json.dumps(response_data))
-        raise FNEClientError(f"Réponse invalide de l'API FNE: {error_msg}", response.status_code)
+        raise FNEClientError(f"Réponse inattendue de l'API FNE: {error_msg}", response.status_code)
 
     except requests.exceptions.HTTPError as e:
         print("--- FNE API HTTP Error Response ---")
