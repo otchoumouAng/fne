@@ -40,24 +40,24 @@ class CompanyInfoModel:
             # UPDATE
             query = """
                 UPDATE company_info SET name = %s, address = %s, phone = %s,
-                                       email = %s, ncc = %s, fne_api_key = %s
+                                       email = %s, ncc = %s, point_of_sale = %s, fne_api_key = %s
                 WHERE id = %s
             """
             values = (
                 company_data['name'], company_data['address'], company_data['phone'],
-                company_data['email'], company_data['ncc'], company_data['fne_api_key'],
+                company_data['email'], company_data['ncc'], company_data['point_of_sale'], company_data['fne_api_key'],
                 existing_company['id']
             )
             operation = "mise à jour"
         else:
             # INSERT
             query = """
-                INSERT INTO company_info (name, address, phone, email, ncc, fne_api_key)
-                VALUES (%s, %s, %s, %s, %s, %s)
+                INSERT INTO company_info (name, address, phone, email, ncc, point_of_sale, fne_api_key)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
             """
             values = (
                 company_data['name'], company_data['address'], company_data['phone'],
-                company_data['email'], company_data['ncc'], company_data['fne_api_key']
+                company_data['email'], company_data['ncc'], company_data['point_of_sale'], company_data['fne_api_key']
             )
             operation = "création"
 

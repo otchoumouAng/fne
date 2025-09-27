@@ -44,6 +44,7 @@ def create_tables(cursor):
         "    `phone` VARCHAR(50),"
         "    `email` VARCHAR(100),"
         "    `ncc` VARCHAR(100) COMMENT 'N° de contribuable',"
+        "    `point_of_sale` VARCHAR(255) NULL,"
         "    `fne_api_key` VARCHAR(255) COMMENT 'Clé d''API pour FNE'"
         ") ENGINE=InnoDB")
 
@@ -360,11 +361,12 @@ def insert_default_company(cursor):
         "+225 0102030405",
         "contact@monentreprise.ci",
         "CI-XXX-1234567-X",
+        "Mon Point de Vente",
         "VOTRE_CLE_API_FNE_A_REMPLACER"
     )
     query = """
-        INSERT INTO company_info (name, address, phone, email, ncc, fne_api_key)
-        VALUES (%s, %s, %s, %s, %s, %s)
+        INSERT INTO company_info (name, address, phone, email, ncc, point_of_sale, fne_api_key)
+        VALUES (%s, %s, %s, %s, %s, %s, %s)
     """
     try:
         cursor.execute(query, company_data)

@@ -45,7 +45,7 @@ def certify_document(invoice_full_data: dict, company_info: dict, client_info: d
             "template": "B2B",  # TODO: Rendre configurable
             "clientNcc": company_info.get("ncc"),
             "clientCompanyName": company_info.get("name"),
-            "pointOfSale": company_info.get("point_of_sale", "Default PoS"),
+            "pointOfSale": company_info.get("point_of_sale"),
             "establishment": company_info.get("name"),
             "clientPhone": company_info.get("phone"),
             "clientEmail": company_info.get("email"),
@@ -69,7 +69,7 @@ def certify_document(invoice_full_data: dict, company_info: dict, client_info: d
             "template": "B2B",  # TODO: Rendre configurable
             "clientNcc": company_info.get("ncc"),
             "clientCompanyName": company_info.get("name"),
-            "pointOfSale": company_info.get("point_of_sale", "Default PoS"), # Utilise une valeur par défaut
+            "pointOfSale": company_info.get("point_of_sale"),
             "establishment": company_info.get("name"),
             "clientPhone": company_info.get("phone"),
             "clientEmail": company_info.get("email"),
