@@ -180,6 +180,7 @@ class InvoiceModule(QWidget):
         self.worker.moveToThread(self.thread)
 
         # Connecter les signaux
+        self.thread.started.connect(self.worker.run)
         self.worker.finished.connect(lambda result: self.on_certification_finished(invoice_id, result))
         self.worker.error.connect(lambda error_msg: self.on_certification_error(invoice_id, error_msg))
 
