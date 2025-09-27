@@ -43,7 +43,7 @@ def certify_document(invoice_full_data: dict, company_info: dict, client_info: d
             "invoiceType": "purchase",
             "paymentMethod": "mobile-money",  # TODO: Rendre configurable
             "template": "B2B",  # TODO: Rendre configurable
-            "clientNcc": company_info.get("tax_id"),
+            "clientNcc": company_info.get("ncc"),
             "clientCompanyName": company_info.get("name"),
             "pointOfSale": company_info.get("point_of_sale", "Default PoS"),
             "establishment": company_info.get("name"),
