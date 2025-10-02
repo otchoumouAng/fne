@@ -55,8 +55,7 @@ def certify_document(invoice_full_data: dict, company_info: dict, client_info: d
                     "reference": str(item.get('id')),
                     "description": item['description'],
                     "quantity": float(item['quantity']),
-                    "amount": float(item['quantity']) * float(item['unit_price']),
-                    "taxes": ["TVA"]
+                    "amount": float(item['quantity']) * float(item['unit_price'])
                 }
                 for item in invoice_full_data.get('items', [])
             ]
