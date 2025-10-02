@@ -1,0 +1,12 @@
+# Ignorer tous les fichiers compilés Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignorer les fichiers de cache de l’interpréteur
+*.python-version
+
+# Ignorer les fichiers de configuration perso
+*.env
+*.venv
