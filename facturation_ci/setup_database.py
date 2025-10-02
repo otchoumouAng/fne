@@ -381,7 +381,7 @@ def main():
     try:
         db_host = "127.0.0.1"
         db_user = "root"
-        db_password = "Admin@1234"
+        db_password = "password"
         db_name = "s_facture_plus"
 
         # Connexion au serveur MySQL

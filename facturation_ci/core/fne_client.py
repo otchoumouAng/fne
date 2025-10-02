@@ -15,15 +15,15 @@ def certify_document(invoice_full_data: dict, company_info: dict, client_info: d
     Appelle l'API FNE pour certifier un document de vente ou d'achat.
 
     :param invoice_full_data: Dictionnaire contenant les détails de la facture et les lignes d'articles ('details' et 'items').
-    :param company_info: Dictionnaire avec les informations de l'entreprise (tax_id).
+    :param company_info: Dictionnaire avec les informations de l'entreprise.
     :param client_info: Dictionnaire avec les informations du client.
     :param user_info: Dictionnaire avec les informations de l'opérateur.
     :param api_key: La clé d'API de l'entreprise pour l'authentification.
-    :return: Dictionnaire avec les données de certification FNE ('nim' et 'qrCode').
+    :return: Dictionnaire avec les données de certification FNE.
     :raises FNEClientError: En cas d'échec de la communication ou d'erreur de l'API.
     """
     invoice_details = invoice_full_data['details']
-    doc_type = invoice_details['document_type'] # 'sale', 'purchase'
+    doc_type = invoice_details['document_type']  # 'sale', 'purchase'
 
     if doc_type not in ["sale", "purchase"]:
         raise FNEClientError(f"Le type de document '{doc_type}' n'est pas supporté pour la signature.")
@@ -38,11 +38,12 @@ def certify_document(invoice_full_data: dict, company_info: dict, client_info: d
 
     # Construire le payload JSON en fonction du type de document.
     if doc_type == "purchase":
-        # Payload spécifique pour les Bordereaux d'Achat (nos BLs)
+        # Payload pour un BL (achat de notre point de vue)
+        # Les informations "client" sont celles de notre propre entreprise.
         payload = {
             "invoiceType": "purchase",
-            "paymentMethod": "mobile-money",  # TODO: Rendre configurable
-            "template": "B2B",  # TODO: Rendre configurable
+            "paymentMethod": "mobile-money",
+            "template": "B2B",
             "clientNcc": company_info.get("ncc"),
             "clientCompanyName": company_info.get("name"),
             "pointOfSale": company_info.get("point_of_sale"),
@@ -54,7 +55,6 @@ def certify_document(invoice_full_data: dict, company_info: dict, client_info: d
                     "reference": str(item.get('id')),
                     "description": item['description'],
                     "quantity": float(item['quantity']),
-                    # Le montant est le total de la ligne (quantité * prix unitaire)
                     "amount": float(item['quantity']) * float(item['unit_price']),
                     "taxes": ["TVA"]
                 }
@@ -62,23 +62,23 @@ def certify_document(invoice_full_data: dict, company_info: dict, client_info: d
             ]
         }
     else:  # 'sale'
-        # Payload pour les factures de vente, conforme à la nouvelle spécification
+        # Payload pour une facture de vente
+        # Les informations "client" sont celles du client, mais le NCC est celui de notre entreprise.
         payload = {
-            "invoiceType": doc_type,
-            "paymentMethod": "cash",  # TODO: Rendre configurable
-            "template": "B2B",  # TODO: Rendre configurable
-            "clientNcc": company_info.get("ncc"),
-            "clientCompanyName": company_info.get("name"),
-            "pointOfSale": company_info.get("point_of_sale"),
-            "establishment": company_info.get("name"),
-            "clientPhone": company_info.get("phone"),
-            "clientEmail": company_info.get("email"),
+            "invoiceType": "sale",
+            "paymentMethod": "cash",
+            "template": "B2B",
+            "clientNcc": company_info.get("ncc"),             # NCC de l'entreprise qui émet
+            "clientCompanyName": client_info.get("name"),   # Nom du client
+            "pointOfSale": company_info.get("point_of_sale"), # Point de vente de l'entreprise
+            "establishment": company_info.get("name"),        # Nom de l'établissement (l'entreprise)
+            "clientPhone": client_info.get("phone"),          # Téléphone du client
+            "clientEmail": client_info.get("email"),          # Email du client
             "items": [
                 {
                     "reference": str(item.get('id')),
                     "description": item['description'],
                     "quantity": float(item['quantity']),
-                    # Le montant est le total de la ligne (quantité * prix unitaire)
                     "amount": float(item['quantity']) * float(item['unit_price']),
                     "taxes": ["TVA"]
                 }
@@ -95,7 +95,6 @@ def certify_document(invoice_full_data: dict, company_info: dict, client_info: d
 
         response_data = response.json()
 
-        # Une réponse de succès contient les clés 'reference' et 'token'
         if "reference" in response_data and "token" in response_data:
             nim = response_data.get("reference")
             qr_code = response_data.get("token")
@@ -104,7 +103,6 @@ def certify_document(invoice_full_data: dict, company_info: dict, client_info: d
             fne_invoice_id = fne_invoice_data.get("id")
             fne_items = fne_invoice_data.get("items", [])
 
-            # Mapper les IDs FNE des articles avec les IDs locaux
             local_item_ids = [item['id'] for item in invoice_full_data.get('items', [])]
             items_id_map = []
             if len(fne_items) == len(local_item_ids):
@@ -113,7 +111,6 @@ def certify_document(invoice_full_data: dict, company_info: dict, client_info: d
                     for fne_item, local_item_id in zip(fne_items, local_item_ids)
                 ]
 
-            # Retourner un dictionnaire plat avec les données nécessaires
             return {
                 "nim": nim,
                 "qr_code": qr_code,
@@ -121,7 +118,6 @@ def certify_document(invoice_full_data: dict, company_info: dict, client_info: d
                 "items_id_map": items_id_map
             }
 
-        # Si la structure de la réponse n'est pas celle attendue, lever une erreur.
         error_msg = response_data.get('message', json.dumps(response_data))
         raise FNEClientError(f"Réponse inattendue de l'API FNE: {error_msg}", response.status_code)
 
@@ -130,12 +126,9 @@ def certify_document(invoice_full_data: dict, company_info: dict, client_info: d
         print(f"Status Code: {e.response.status_code}")
         print(f"Response Body: {e.response.text}")
         print("-----------------------------------")
-        error_details = "Détail de l'erreur non disponible."
         try:
-            # Essayer de parser le JSON pour un message d'erreur structuré
             error_details = e.response.json().get('message', e.response.text)
         except json.JSONDecodeError:
-            # Si ce n'est pas du JSON, utiliser le texte brut de la réponse
             error_details = e.response.text
         raise FNEClientError(f"Erreur API FNE ({e.response.status_code}): {error_details}", e.response.status_code)
 
@@ -155,7 +148,7 @@ def refund_invoice(api_key: str, original_fne_invoice_id: str, items_to_refund: 
     :return: Dictionnaire avec les données de l'avoir certifié.
     :raises FNEClientError: En cas d'échec.
     """
-    endpoint = f"{FNE_API_BASE_URL}/external/invoices/{original_fne_invoice_id}/refund"
+    endpoint = f"{FNE_API_BASE_URL}/invoices/{original_fne_invoice_id}/refund"
 
     headers = {
         "Authorization": f"Bearer {api_key}",
@@ -163,28 +156,35 @@ def refund_invoice(api_key: str, original_fne_invoice_id: str, items_to_refund: 
         "Accept": "application/json"
     }
 
-    payload = {
-        "items": items_to_refund
-    }
+    payload = { "items": items_to_refund }
 
     try:
+        print("--- Payload Avoir FNE ---")
+        print(json.dumps(payload, indent=2))
+        print("--------------------------")
         response = requests.post(endpoint, headers=headers, data=json.dumps(payload), timeout=20)
         response.raise_for_status()
 
         response_data = response.json()
 
-        if response_data.get("status") == "success" and "data" in response_data:
-            return response_data["data"]
+        if "reference" in response_data and "token" in response_data:
+            return {
+                "nim": response_data.get("reference"),
+                "qr_code": response_data.get("token")
+            }
 
         error_msg = response_data.get('message', json.dumps(response_data))
-        raise FNEClientError(f"Réponse invalide de l'API FNE pour l'avoir: {error_msg}", response.status_code)
+        raise FNEClientError(f"Réponse inattendue de l'API FNE pour l'avoir: {error_msg}", response.status_code)
 
     except requests.exceptions.HTTPError as e:
-        error_details = "Détail de l'erreur non disponible."
+        print("--- FNE API HTTP Error Response (Avoir) ---")
+        print(f"Status Code: {e.response.status_code}")
+        print(f"Response Body: {e.response.text}")
+        print("------------------------------------------")
         try:
             error_details = e.response.json().get('message', e.response.text)
         except json.JSONDecodeError:
-            pass
+            error_details = e.response.text
         raise FNEClientError(f"Erreur API FNE ({e.response.status_code}) lors de la création de l'avoir: {error_details}", e.response.status_code)
 
     except requests.exceptions.RequestException as e:

@@ -19,7 +19,7 @@ class BordereauLivraisonModel:
             # Cette requête complexe joint toutes les tables nécessaires
             query = """
                 SELECT
-                    bl.id as bl_id, bl.code_bl, bl.date_creation as bl_date_creation,
+                    bl.id as bl_id, bl.code_bl, bl.date_creation as bl_date_creation, bl.statut_fne,
                     f.id as facture_id, f.code_facture, f.date_facturation,
                     cmd.id as commande_id, cmd.code_commande, cmd.date_commande,
                     c.id as client_id, c.name as client_name, c.address as client_address,
@@ -38,7 +38,8 @@ class BordereauLivraisonModel:
 
             # Récupérer les lignes d'articles depuis la commande
             commande_id = data['details']['commande_id']
-            cursor.execute("SELECT * FROM commande_items WHERE commande_id = %s", (commande_id,))
+            item_query = "SELECT id, product_id, description, quantity, unit_price, tax_rate, fne_item_id FROM commande_items WHERE commande_id = %s"
+            cursor.execute(item_query, (commande_id,))
             data['items'] = cursor.fetchall()
 
             return data
