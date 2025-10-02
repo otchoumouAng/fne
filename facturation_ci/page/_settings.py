@@ -1,4 +1,4 @@
-# Form implementation generated from reading ui file 'facturation_ci/ui/settings.ui'
+# Form implementation generated from reading ui file 'ui/settings.ui'
 #
 # Created by: PyQt6 UI code generator 6.9.1
 #
@@ -49,13 +49,19 @@ class Ui_SettingsPage(object):
         self.tax_id_edit = QtWidgets.QLineEdit(parent=self.company_groupbox)
         self.tax_id_edit.setObjectName("tax_id_edit")
         self.formLayout.setWidget(4, QtWidgets.QFormLayout.ItemRole.FieldRole, self.tax_id_edit)
+        self.label_pos = QtWidgets.QLabel(parent=self.company_groupbox)
+        self.label_pos.setObjectName("label_pos")
+        self.formLayout.setWidget(5, QtWidgets.QFormLayout.ItemRole.LabelRole, self.label_pos)
+        self.pos_edit = QtWidgets.QLineEdit(parent=self.company_groupbox)
+        self.pos_edit.setObjectName("pos_edit")
+        self.formLayout.setWidget(5, QtWidgets.QFormLayout.ItemRole.FieldRole, self.pos_edit)
         self.label_fne_api_key = QtWidgets.QLabel(parent=self.company_groupbox)
         self.label_fne_api_key.setObjectName("label_fne_api_key")
-        self.formLayout.setWidget(5, QtWidgets.QFormLayout.ItemRole.LabelRole, self.label_fne_api_key)
+        self.formLayout.setWidget(6, QtWidgets.QFormLayout.ItemRole.LabelRole, self.label_fne_api_key)
         self.fne_api_key_edit = QtWidgets.QLineEdit(parent=self.company_groupbox)
         self.fne_api_key_edit.setEchoMode(QtWidgets.QLineEdit.EchoMode.Password)
         self.fne_api_key_edit.setObjectName("fne_api_key_edit")
-        self.formLayout.setWidget(5, QtWidgets.QFormLayout.ItemRole.FieldRole, self.fne_api_key_edit)
+        self.formLayout.setWidget(6, QtWidgets.QFormLayout.ItemRole.FieldRole, self.fne_api_key_edit)
         self.verticalLayout.addWidget(self.company_groupbox)
         spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding)
         self.verticalLayout.addItem(spacerItem)
@@ -80,15 +86,6 @@ class Ui_SettingsPage(object):
         self.label_phone.setText(_translate("SettingsPage", "Téléphone :"))
         self.label_email.setText(_translate("SettingsPage", "Email :"))
         self.label_tax_id.setText(_translate("SettingsPage", "N° de Contribuable :"))
+        self.label_pos.setText(_translate("SettingsPage", "Point de Vente :"))
         self.label_fne_api_key.setText(_translate("SettingsPage", "Clé d\'API FNE :"))
         self.save_button.setText(_translate("SettingsPage", "Enregistrer les modifications"))
-
-
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    SettingsPage = QtWidgets.QWidget()
-    ui = Ui_SettingsPage()
-    ui.setupUi(SettingsPage)
-    SettingsPage.show()
-    sys.exit(app.exec())
