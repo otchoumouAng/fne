@@ -161,29 +161,24 @@ class CreditNoteListDialog(QDialog):
     def on_selection_changed(self, selected, deselected):
         self.ui.print_button.setEnabled(self.ui.avoirs_table_view.selectionModel().hasSelection())
 
+        should_enable_certify = False
         avoir_id = self.get_selected_avoir_id()
-        if not avoir_id:
-            self.ui.certify_button.setEnabled(False)
-            return
 
-        avoir_data = self.avoir_model.get_by_id(avoir_id)
-        if not avoir_data:
-            self.ui.certify_button.setEnabled(False)
-            return
+        if avoir_id:
+            avoir_data = self.avoir_model.get_by_id(avoir_id)
+            # Conditions pour activer le bouton de certification :
+            # 1. L'avoir existe.
+            # 2. L'avoir n'est pas déjà certifié avec succès.
+            # 3. La facture d'origine est liée.
+            # 4. La facture d'origine a été certifiée (a un fne_invoice_id).
+            if avoir_data and avoir_data.get('statut_fne') != 'success':
+                original_facture_id = avoir_data.get('facture_origine_id')
+                if original_facture_id:
+                    fne_invoice_id = self.facture_model.get_fne_invoice_id(original_facture_id)
+                    if fne_invoice_id:
+                        should_enable_certify = True
 
-        # Désactiver le bouton si l'avoir est déjà certifié
-        if avoir_data.get('statut_fne') == 'success':
-            self.ui.certify_button.setEnabled(False)
-            return
-
-        # Vérifier si la facture d'origine a un ID FNE
-        original_facture_id = avoir_data.get('facture_origine_id')
-        if not original_facture_id:
-            self.ui.certify_button.setEnabled(False)
-            return
-
-        fne_invoice_id = self.facture_model.get_fne_invoice_id(original_facture_id)
-        self.ui.certify_button.setEnabled(bool(fne_invoice_id))
+        self.ui.certify_button.setEnabled(should_enable_certify)
 
     def get_selected_avoir_id(self):
         selected_indexes = self.ui.avoirs_table_view.selectionModel().selectedRows()
