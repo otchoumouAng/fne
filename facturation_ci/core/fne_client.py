@@ -155,7 +155,8 @@ def refund_invoice(api_key: str, original_fne_invoice_id: str, items_to_refund: 
         "Accept": "application/json"
     }
 
-    payload = { "items": items_to_refund }
+    # Le payload contient uniquement la liste des articles à rembourser
+    payload = {"items": items_to_refund}
 
     try:
         print("--- Payload Avoir FNE ---")
@@ -166,14 +167,16 @@ def refund_invoice(api_key: str, original_fne_invoice_id: str, items_to_refund: 
 
         response_data = response.json()
 
+        # Une réponse de succès contient les clés 'reference' et 'token' au premier niveau
         if "reference" in response_data and "token" in response_data:
             return {
                 "nim": response_data.get("reference"),
                 "qr_code": response_data.get("token")
             }
 
+        # Gestion d'une réponse de succès qui n'a pas la structure attendue
         error_msg = response_data.get('message', json.dumps(response_data))
-        raise FNEClientError(f"Réponse inattendue de l'API FNE pour l'avoir: {error_msg}", response.status_code)
+        raise FNEClientError(f"Réponse de succès inattendue de l'API FNE pour l'avoir: {error_msg}", response.status_code)
 
     except requests.exceptions.HTTPError as e:
         print("--- FNE API HTTP Error Response (Avoir) ---")
