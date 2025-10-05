@@ -31,6 +31,31 @@ class FactureAvoirModel:
         finally:
             cursor.close()
 
+    def update_fne_status(self, avoir_id, statut_fne, nim=None, qr_code=None, error_message=None):
+        """Met à jour le statut et les données FNE d'un avoir."""
+        connection = self.db_manager.get_connection()
+        if not connection:
+            return False, "Erreur de connexion BDD"
+
+        cursor = connection.cursor()
+        query = """
+            UPDATE factures_avoir
+            SET statut_fne = %s, fne_nim = %s, fne_qr_code = %s, fne_error_message = %s
+            WHERE id = %s
+        """
+        values = (statut_fne, nim, qr_code, error_message, avoir_id)
+        try:
+            cursor.execute(query, values)
+            connection.commit()
+            print(f"Données FNE pour l'avoir {avoir_id} mises à jour.")
+            return True, None
+        except Error as e:
+            print(f"Erreur lors de la mise à jour FNE pour l'avoir {avoir_id}: {e}")
+            connection.rollback()
+            return False, str(e)
+        finally:
+            cursor.close()
+
     def get_by_id(self, avoir_id):
         """Récupère les détails complets d'un avoir, y compris les infos client."""
         connection = self.db_manager.get_connection()

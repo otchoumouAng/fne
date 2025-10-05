@@ -43,7 +43,8 @@ def create_tables(cursor):
         "    `address` TEXT,"
         "    `phone` VARCHAR(50),"
         "    `email` VARCHAR(100),"
-        "    `tax_id` VARCHAR(100) COMMENT 'N° de contribuable',"
+        "    `ncc` VARCHAR(100) COMMENT 'N° de contribuable',"
+        "    `point_of_sale` VARCHAR(255) NULL,"
         "    `fne_api_key` VARCHAR(255) COMMENT 'Clé d''API pour FNE'"
         ") ENGINE=InnoDB")
 
@@ -54,6 +55,7 @@ def create_tables(cursor):
         "  `address` TEXT,"
         "  `email` VARCHAR(100),"
         "  `phone` VARCHAR(50),"
+        "  `ncc` VARCHAR(100) NULL COMMENT 'N° de contribuable',"
         "  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
         ") ENGINE=InnoDB")
 
@@ -93,6 +95,7 @@ def create_tables(cursor):
         "  `quantity` DECIMAL(10, 2) NOT NULL,"
         "  `unit_price` DECIMAL(15, 2) NOT NULL,"
         "  `tax_rate` DECIMAL(5, 2) NOT NULL,"
+        "  `fne_item_id` VARCHAR(255) NULL COMMENT 'ID unique de la ligne d''article retourné par FNE',"
         "  FOREIGN KEY (`commande_id`) REFERENCES `commandes`(`id`) ON DELETE CASCADE,"
         "  FOREIGN KEY (`product_id`) REFERENCES `products`(`id`)"
         ") ENGINE=InnoDB")
@@ -105,6 +108,7 @@ def create_tables(cursor):
         "  `date_facturation` DATE NOT NULL,"
         "  `statut_fne` ENUM('pending', 'success', 'failed') DEFAULT 'pending',"
         "  `fne_nim` VARCHAR(255) NULL,"
+        "  `fne_invoice_id` VARCHAR(255) NULL COMMENT 'ID unique de la facture retourné par FNE',"
         "  `fne_qr_code` TEXT NULL,"
         "  `fne_error_message` TEXT NULL,"
         "  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,"
@@ -342,6 +346,36 @@ def seed_permissions(cursor):
         raise
 
 
+def insert_default_company(cursor):
+    """Insère les informations de l'entreprise par défaut si la table est vide."""
+    print("\nVérification des informations de l'entreprise...")
+    cursor.execute("SELECT id FROM company_info LIMIT 1")
+    if cursor.fetchone():
+        print("  - Les informations de l'entreprise existent déjà.")
+        return
+
+    print("  - Aucune information d'entreprise trouvée, insertion des données par défaut...")
+    company_data = (
+        "Mon Entreprise (A MODIFIER)",
+        "123, Rue de l'Exemple, Ville, Pays",
+        "+225 0102030405",
+        "contact@monentreprise.ci",
+        "CI-XXX-1234567-X",
+        "Mon Point de Vente",
+        "VOTRE_CLE_API_FNE_A_REMPLACER"
+    )
+    query = """
+        INSERT INTO company_info (name, address, phone, email, ncc, point_of_sale, fne_api_key)
+        VALUES (%s, %s, %s, %s, %s, %s, %s)
+    """
+    try:
+        cursor.execute(query, company_data)
+        print("  - Informations de l'entreprise par défaut insérées avec succès.")
+    except Error as e:
+        print(f"ERREUR lors de l'insertion des informations de l'entreprise: {e}")
+        raise
+
+
 def main():
     """Fonction principale pour exécuter le script (modifiée pour non-interactif)."""
     try:
@@ -368,6 +402,7 @@ def main():
         create_tables(cursor)
         insert_initial_data(cursor)
         seed_permissions(cursor)
+        insert_default_company(cursor)
         # Pour l'admin, on ne peut pas utiliser getpass, donc on met un mot de passe par défaut "admin"
         print("\n--- Création de l'utilisateur 'admin' avec mot de passe 'admin' ---")
         cursor.execute("SELECT id FROM users WHERE username = 'admin'")

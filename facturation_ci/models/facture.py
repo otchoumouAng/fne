@@ -92,8 +92,42 @@ class FactureModel:
         finally:
             cursor.close()
 
-    def update_fne_status(self, facture_id, statut_fne, nim=None, qr_code=None, error_message=None):
-        """Met à jour le statut et les données FNE d'une facture."""
+    def save_certification_results(self, facture_id, nim, qr_code, fne_invoice_id, items_id_map):
+        """
+        Sauvegarde tous les résultats d'une certification FNE réussie dans une transaction atomique.
+        """
+        connection = self.db_manager.get_connection()
+        if not connection:
+            return False, "Erreur de connexion BDD"
+
+        cursor = connection.cursor()
+        try:
+            # 1. Mettre à jour la facture avec toutes les données FNE
+            update_facture_query = """
+                UPDATE factures
+                SET statut_fne = 'success', fne_nim = %s, fne_qr_code = %s, fne_invoice_id = %s, fne_error_message = NULL
+                WHERE id = %s
+            """
+            cursor.execute(update_facture_query, (nim, qr_code, fne_invoice_id, facture_id))
+
+            # 2. Mettre à jour chaque ligne de commande avec son ID FNE
+            if items_id_map:
+                update_item_query = "UPDATE commande_items SET fne_item_id = %s WHERE id = %s"
+                cursor.executemany(update_item_query, items_id_map)
+
+            connection.commit()
+            print(f"Résultats de certification FNE pour la facture {facture_id} sauvegardés avec succès.")
+            return True, None
+        except Error as e:
+            connection.rollback()
+            error_message = f"Erreur lors de la sauvegarde des résultats de certification FNE pour la facture {facture_id}: {e}"
+            print(error_message)
+            return False, error_message
+        finally:
+            cursor.close()
+
+    def save_certification_error(self, facture_id, error_message):
+        """Met à jour le statut FNE d'une facture en cas d'échec."""
         connection = self.db_manager.get_connection()
         if not connection:
             return False, "Erreur de connexion BDD"
@@ -101,19 +135,33 @@ class FactureModel:
         cursor = connection.cursor()
         query = """
             UPDATE factures
-            SET statut_fne = %s, fne_nim = %s, fne_qr_code = %s, fne_error_message = %s
+            SET statut_fne = 'failed', fne_error_message = %s
             WHERE id = %s
         """
-        values = (statut_fne, nim, qr_code, error_message, facture_id)
         try:
-            cursor.execute(query, values)
+            cursor.execute(query, (error_message, facture_id))
             connection.commit()
-            print(f"Données FNE pour la facture {facture_id} mises à jour.")
             return True, None
         except Error as e:
-            print(f"Erreur lors de la mise à jour FNE pour la facture {facture_id}: {e}")
             connection.rollback()
             return False, str(e)
+        finally:
+            cursor.close()
+
+    def get_fne_invoice_id(self, facture_id):
+        """Récupère l'ID FNE d'une facture."""
+        connection = self.db_manager.get_connection()
+        if not connection:
+            return None
+        cursor = connection.cursor()
+        query = "SELECT fne_invoice_id FROM factures WHERE id = %s"
+        try:
+            cursor.execute(query, (facture_id,))
+            result = cursor.fetchone()
+            return result[0] if result else None
+        except Error as e:
+            print(f"Erreur lors de la récupération de l'ID FNE pour la facture {facture_id}: {e}")
+            return None
         finally:
             cursor.close()
 
@@ -154,7 +202,7 @@ class FactureModel:
                 bl.code_bl, bl.date_creation as bl_date_creation,
                 cmd.code_commande, cmd.date_commande, cmd.total_ht, cmd.total_tva, cmd.total_ttc,
                 c.id as client_id, c.name as client_name, c.address as client_address, 
-                c.email as client_email, c.phone as client_phone
+                c.email as client_email, c.phone as client_phone, c.ncc as client_ncc
             FROM factures f
             LEFT JOIN bordereaux_livraison bl ON f.id = bl.facture_id
             JOIN commandes cmd ON f.commande_id = cmd.id

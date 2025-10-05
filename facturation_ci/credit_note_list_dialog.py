@@ -7,7 +7,10 @@ from PyQt6.QtCore import Qt, QThread
 from page._credit_note_list_dialog import Ui_CreditNoteListDialog
 from models.avoir import FactureAvoirModel
 from models.company import CompanyInfoModel
-from models.client import ClientModel # On en aura besoin pour les détails client
+from models.client import ClientModel
+from models.facture import FactureModel
+from models.commande import CommandeModel
+import core.fne_client as fne_client
 from avoir_viewer_dialog import AvoirViewerDialog
 from core.pdf_generator import PDFGenerator
 from core.worker import Worker
@@ -19,8 +22,11 @@ class CreditNoteListDialog(QDialog):
         self.avoir_model = FactureAvoirModel(self.db_manager)
         self.company_model = CompanyInfoModel(self.db_manager)
         self.client_model = ClientModel(self.db_manager)
+        self.facture_model = FactureModel(self.db_manager)
+        self.commande_model = CommandeModel(self.db_manager)
         self.thread = None
         self.worker = None
+        self.is_task_running = False
 
         self.ui = Ui_CreditNoteListDialog()
         self.ui.setupUi(self)
@@ -45,7 +51,97 @@ class CreditNoteListDialog(QDialog):
         self.ui.avoirs_table_view.selectionModel().selectionChanged.connect(self.on_selection_changed)
         self.ui.avoirs_table_view.doubleClicked.connect(self.open_avoir_details)
         self.ui.print_button.clicked.connect(self.print_avoir)
-        # self.ui.certify_button.clicked.connect(self.certify_avoir)
+        self.ui.certify_button.clicked.connect(self.certify_avoir)
+
+    def certify_avoir(self):
+        if self.is_task_running:
+            QMessageBox.warning(self, "Tâche en cours", "Une autre tâche est déjà en cours. Veuillez patienter.")
+            return
+
+        avoir_id = self.get_selected_avoir_id()
+        if not avoir_id: return
+
+        avoir_data = self.avoir_model.get_by_id(avoir_id)
+        if not avoir_data:
+            QMessageBox.critical(self, "Erreur", f"Impossible de charger l'avoir ID {avoir_id}.")
+            return
+
+        if avoir_data.get('statut_fne') == 'success':
+            QMessageBox.information(self, "Déjà certifié", "Cet avoir a déjà été certifié avec succès.")
+            return
+
+        original_facture_id = avoir_data['facture_origine_id']
+        fne_invoice_id = self.facture_model.get_fne_invoice_id(original_facture_id)
+        if not fne_invoice_id:
+            QMessageBox.critical(self, "Erreur Critique", "Impossible de trouver l'ID de certification FNE pour la facture d'origine. L'avoir ne peut pas être certifié.")
+            return
+
+        commande_id = self.facture_model.get_commande_id_from_facture(original_facture_id)
+        if not commande_id:
+            QMessageBox.critical(self, "Erreur Critique", "Impossible de trouver la commande d'origine.")
+            return
+        original_items_with_fne_id = self.commande_model.get_items_with_fne_id(commande_id)
+
+        # On utilise l'ID de la ligne de commande, qui est unique, pour la correspondance.
+        fne_item_id_map = {item['id']: item['fne_item_id'] for item in original_items_with_fne_id}
+
+        items_to_refund = []
+        for item in avoir_data['lignes_avoir']:
+            # L'ID de la ligne de commande originale est maintenant stocké dans l'avoir
+            commande_item_id = item['commande_item_id']
+            fne_item_id = fne_item_id_map.get(commande_item_id)
+            if not fne_item_id:
+                QMessageBox.critical(self, "Erreur de Données", f"L'article '{item['description']}' sur l'avoir n'a pas d'ID de certification FNE correspondant sur la facture d'origine.")
+                return
+            items_to_refund.append({
+                "id": fne_item_id,
+                "quantity": float(item['quantity'])
+            })
+
+        company_info = self.company_model.get_first()
+        api_key = company_info.get('fne_api_key')
+        if not api_key:
+            QMessageBox.critical(self, "Erreur de configuration", "La clé d'API FNE pour l'entreprise n'est pas configurée.")
+            return
+
+        self.is_task_running = True
+        self.thread = QThread()
+        self.worker = Worker(
+            fne_client.refund_invoice,
+            api_key=api_key,
+            original_fne_invoice_id=fne_invoice_id,
+            items_to_refund=items_to_refund
+        )
+        self.worker.moveToThread(self.thread)
+
+        self.worker.finished.connect(lambda result: self.on_avoir_certification_finished(avoir_id, result))
+        self.worker.error.connect(lambda error_msg: self.on_avoir_certification_error(avoir_id, error_msg))
+        self.thread.started.connect(self.worker.run)
+        self.worker.finished.connect(self.thread.quit)
+        self.worker.finished.connect(self.worker.deleteLater)
+        self.thread.finished.connect(self.thread.deleteLater)
+
+        self.thread.start()
+        self.ui.certify_button.setEnabled(False)
+
+    def on_avoir_certification_finished(self, avoir_id, fne_data):
+        self.is_task_running = False
+        nim = fne_data.get('nim')
+        qr_code = fne_data.get('qr_code')
+        QMessageBox.information(self, "Succès", f"Avoir certifié avec succès.\nNIM: {nim}")
+
+        # Mettre à jour le statut dans la base de données
+        self.avoir_model.update_fne_status(avoir_id, 'success', nim=nim, qr_code=qr_code)
+
+        self.load_data()
+        self.ui.certify_button.setEnabled(True)
+
+    def on_avoir_certification_error(self, avoir_id, error_message):
+        self.is_task_running = False
+        QMessageBox.critical(self, "Erreur de Certification FNE", error_message)
+        self.avoir_model.update_fne_status(avoir_id, 'failed', error_message=error_message)
+        self.load_data()
+        self.ui.certify_button.setEnabled(True)
 
     def load_data(self):
         avoirs = self.avoir_model.get_all()
@@ -63,9 +159,31 @@ class CreditNoteListDialog(QDialog):
         self.ui.avoirs_table_view.resizeColumnsToContents()
 
     def on_selection_changed(self, selected, deselected):
-        is_selection = self.ui.avoirs_table_view.selectionModel().hasSelection()
-        self.ui.certify_button.setEnabled(is_selection)
-        self.ui.print_button.setEnabled(is_selection)
+        self.ui.print_button.setEnabled(self.ui.avoirs_table_view.selectionModel().hasSelection())
+
+        avoir_id = self.get_selected_avoir_id()
+        if not avoir_id:
+            self.ui.certify_button.setEnabled(False)
+            return
+
+        avoir_data = self.avoir_model.get_by_id(avoir_id)
+        if not avoir_data:
+            self.ui.certify_button.setEnabled(False)
+            return
+
+        # Désactiver le bouton si l'avoir est déjà certifié
+        if avoir_data.get('statut_fne') == 'success':
+            self.ui.certify_button.setEnabled(False)
+            return
+
+        # Vérifier si la facture d'origine a un ID FNE
+        original_facture_id = avoir_data.get('facture_origine_id')
+        if not original_facture_id:
+            self.ui.certify_button.setEnabled(False)
+            return
+
+        fne_invoice_id = self.facture_model.get_fne_invoice_id(original_facture_id)
+        self.ui.certify_button.setEnabled(bool(fne_invoice_id))
 
     def get_selected_avoir_id(self):
         selected_indexes = self.ui.avoirs_table_view.selectionModel().selectedRows()
@@ -80,6 +198,10 @@ class CreditNoteListDialog(QDialog):
         dialog.exec()
 
     def print_avoir(self):
+        if self.is_task_running:
+            QMessageBox.warning(self, "Tâche en cours", "Une autre tâche est déjà en cours. Veuillez patienter.")
+            return
+
         avoir_id = self.get_selected_avoir_id()
         if not avoir_id: return
 
@@ -106,6 +228,7 @@ class CreditNoteListDialog(QDialog):
         html_content = generator.render_html(**context)
         output_file = f"Avoir-{avoir_data['code_avoir']}.pdf"
 
+        self.is_task_running = True
         self.thread = QThread()
         self.worker = Worker(generator.generate_pdf, html_content, output_file)
         self.worker.moveToThread(self.thread)
@@ -121,6 +244,7 @@ class CreditNoteListDialog(QDialog):
         self.ui.print_button.setEnabled(False)
 
     def on_printing_finished(self, output_file):
+        self.is_task_running = False
         self.ui.print_button.setEnabled(True)
         reply = QMessageBox.information(self, "Impression terminée",
             f"Le document a été exporté : {output_file}\n\nVoulez-vous l'ouvrir ?",
@@ -130,6 +254,7 @@ class CreditNoteListDialog(QDialog):
             webbrowser.open(os.path.abspath(output_file))
 
     def on_printing_error(self, error_message):
+        self.is_task_running = False
         self.ui.print_button.setEnabled(True)
         QMessageBox.critical(self, "Erreur d'impression", f"Une erreur est survenue:\n{error_message}")
 

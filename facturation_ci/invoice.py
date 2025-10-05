@@ -36,6 +36,7 @@ class InvoiceModule(QWidget):
         self.avoir_model = FactureAvoirModel(self.db_manager)
         self.thread = None
         self.worker = None
+        self.is_task_running = False
 
         self.ui = Ui_FacturePage()
         self.ui.setupUi(self)
@@ -144,6 +145,10 @@ class InvoiceModule(QWidget):
                     self.load_invoices()
 
     def certify_invoice(self):
+        if self.is_task_running:
+            QMessageBox.warning(self, "Tâche en cours", "Une autre tâche est déjà en cours. Veuillez patienter.")
+            return
+
         invoice_id = self.get_selected_invoice_id()
         if not invoice_id: return
 
@@ -158,16 +163,25 @@ class InvoiceModule(QWidget):
             return
 
         company_info = self.company_model.get_first()
-        if not company_info or not company_info.get('fne_api_key'):
-            QMessageBox.critical(self, "Erreur de configuration", "La clé d'API FNE pour l'entreprise n'est pas configurée.")
+        if not company_info or not company_info.get('fne_api_key') or not company_info.get('ncc'):
+            QMessageBox.critical(self, "Erreur de configuration",
+                                 "Les informations de l'entreprise sont incomplètes.\n"
+                                 "Veuillez renseigner le NCC et la clé d'API FNE dans les paramètres.")
             return
 
         # Le FNE client attend des infos spécifiques, on les prépare
         # Note: 'document_type' doit être dans les détails de la facture/commande
         # Pour l'exemple, on le met en dur.
         invoice_data['details']['document_type'] = 'sale'
-        client_info = {'name': invoice_data['details']['client_name'], 'address': invoice_data['details']['client_address']}
+        client_info = {
+            "name": invoice_data['details'].get('client_name'),
+            "address": invoice_data['details'].get('client_address'),
+            "ncc": invoice_data['details'].get('client_ncc'),
+            "phone": invoice_data['details'].get('client_phone'),
+            "email": invoice_data['details'].get('client_email')
+        }
 
+        self.is_task_running = True
         self.thread = QThread()
         self.worker = Worker(
             fne_client.certify_document,
@@ -180,6 +194,7 @@ class InvoiceModule(QWidget):
         self.worker.moveToThread(self.thread)
 
         # Connecter les signaux
+        self.thread.started.connect(self.worker.run)
         self.worker.finished.connect(lambda result: self.on_certification_finished(invoice_id, result))
         self.worker.error.connect(lambda error_msg: self.on_certification_error(invoice_id, error_msg))
 
@@ -191,34 +206,51 @@ class InvoiceModule(QWidget):
         self.ui.certify_button.setEnabled(False)
         self.main_window.statusBar().showMessage(f"Certification de la facture {invoice_data['details']['code_facture']} en cours...")
 
-    def on_certification_finished(self, invoice_id, fne_data):
+    def on_certification_finished(self, invoice_id, result_data):
+        self.is_task_running = False
         self.main_window.statusBar().showMessage("Prêt", 3000)
-        QMessageBox.information(self, "Succès", f"Facture certifiée avec succès.\nNIM: {fne_data['nim']}")
 
-        # Mettre à jour la base de données
-        self.model.update_fne_status(
+        nim = result_data.get('nim')
+        qr_code = result_data.get('qr_code')
+        fne_invoice_id = result_data.get('fne_invoice_id')
+        items_id_map = result_data.get('items_id_map', [])
+
+        QMessageBox.information(self, "Succès", f"Facture certifiée avec succès.\nNIM: {nim}")
+
+        # Sauvegarder tous les résultats de la certification de manière atomique
+        success, error_msg = self.model.save_certification_results(
             facture_id=invoice_id,
-            statut_fne='success',
-            nim=fne_data['nim'],
-            qr_code=fne_data['qr_code']
+            nim=nim,
+            qr_code=qr_code,
+            fne_invoice_id=fne_invoice_id,
+            items_id_map=items_id_map
         )
+
+        if not success:
+            QMessageBox.critical(self, "Erreur de Sauvegarde",
+                                 f"La certification a réussi mais les résultats n'ont pas pu être sauvegardés en base de données : {error_msg}")
+
         self.load_invoices()
         self.ui.certify_button.setEnabled(True)
 
     def on_certification_error(self, invoice_id, error_message):
+        self.is_task_running = False
         self.main_window.statusBar().showMessage("Erreur de certification", 5000)
         QMessageBox.critical(self, "Erreur de Certification FNE", error_message)
 
         # Mettre à jour la base de données avec le statut d'échec
-        self.model.update_fne_status(
+        self.model.save_certification_error(
             facture_id=invoice_id,
-            statut_fne='failed',
             error_message=error_message
         )
         self.load_invoices()
         self.ui.certify_button.setEnabled(True)
 
     def print_invoice(self):
+        if self.is_task_running:
+            QMessageBox.warning(self, "Tâche en cours", "Une autre tâche est déjà en cours. Veuillez patienter.")
+            return
+
         invoice_id = self.get_selected_invoice_id()
         if not invoice_id: return
 
@@ -227,6 +259,7 @@ class InvoiceModule(QWidget):
             QMessageBox.critical(self, "Erreur", f"Impossible de charger les données de la facture {invoice_id} pour l'impression.")
             return
 
+        self.is_task_running = True
         # Pour l'instant, les données de l'entreprise sont en dur.
         # Idéalement, elles viendraient de la BDD via un CompanyInfoModel.
         company_data = {
@@ -274,6 +307,7 @@ class InvoiceModule(QWidget):
         self.main_window.statusBar().showMessage(f"Génération du PDF pour la facture {invoice_data['details']['code_facture']}...")
 
     def on_printing_finished(self, output_file):
+        self.is_task_running = False
         # Le nom du fichier est maintenant directement passé au slot.
         self.ui.print_button.setEnabled(True)
         self.ui.bl_button.setEnabled(True) # Réactiver aussi le bouton BL
@@ -294,6 +328,7 @@ class InvoiceModule(QWidget):
                 QMessageBox.critical(self, "Erreur d'ouverture", f"Impossible d'ouvrir le fichier PDF:\n{e}")
 
     def on_printing_error(self, error_message):
+        self.is_task_running = False
         QMessageBox.critical(self, "Erreur d'impression", f"Une erreur est survenue:\n{error_message}")
         self.ui.print_button.setEnabled(True)
         self.main_window.statusBar().showMessage("Erreur lors de la génération du PDF", 5000)
@@ -330,11 +365,95 @@ class InvoiceModule(QWidget):
         dialog.exec()
 
     def certify_bl(self):
+        if self.is_task_running:
+            QMessageBox.warning(self, "Tâche en cours", "Une autre tâche est déjà en cours. Veuillez patienter.")
+            return
+
         invoice_id = self.get_selected_invoice_id()
         if not invoice_id: return
-        QMessageBox.information(self, "À implémenter", f"La certification FNE du BL pour la facture {invoice_id} sera implémentée ici.")
+
+        bl_data = self.bl_model.get_by_facture_id(invoice_id)
+        if not bl_data:
+            QMessageBox.critical(self, "Erreur", f"Impossible de charger les données du BL pour la facture {invoice_id}.")
+            return
+
+        if bl_data['details']['statut_fne'] == 'success':
+            QMessageBox.information(self, "Déjà certifié", "Ce BL a déjà été certifié avec succès.")
+            return
+
+        company_info = self.company_model.get_first()
+        if not company_info or not company_info.get('fne_api_key'):
+            QMessageBox.critical(self, "Erreur de configuration", "La clé d'API FNE pour l'entreprise n'est pas configurée.")
+            return
+
+        self.is_task_running = True
+        # Le document_type pour un BL est 'purchase'
+        bl_data['details']['document_type'] = 'purchase'
+
+        # Le client_info pour un 'purchase' n'est pas utilisé par le fne_client,
+        # qui prendra les infos de company_info. On peut passer un dict vide.
+        client_info = {}
+
+        self.thread = QThread()
+        self.worker = Worker(
+            fne_client.certify_document,
+            invoice_full_data=bl_data, # On passe les données du BL
+            company_info=company_info,
+            client_info=client_info, # Non utilisé pour 'purchase'
+            user_info=self.user_data,
+            api_key=company_info['fne_api_key']
+        )
+        self.worker.moveToThread(self.thread)
+
+        bl_id = bl_data['details']['bl_id']
+        self.worker.finished.connect(lambda result: self.on_bl_certification_finished(bl_id, result))
+        self.worker.error.connect(lambda error_msg: self.on_bl_certification_error(bl_id, error_msg))
+        self.thread.started.connect(self.worker.run)
+
+        self.worker.finished.connect(self.thread.quit)
+        self.worker.finished.connect(self.worker.deleteLater)
+        self.thread.finished.connect(self.thread.deleteLater)
+
+        self.thread.start()
+        self.ui.bl_button.setEnabled(False)
+        self.main_window.statusBar().showMessage(f"Certification du BL {bl_data['details']['code_bl']} en cours...")
+
+    def on_bl_certification_finished(self, bl_id, result_data):
+        self.is_task_running = False
+        self.main_window.statusBar().showMessage("Prêt", 3000)
+
+        nim = result_data.get('nim')
+        qr_code = result_data.get('qr_code')
+
+        QMessageBox.information(self, "Succès", f"BL certifié avec succès.\nNIM: {nim}")
+
+        self.bl_model.update_fne_status(
+            bl_id=bl_id,
+            statut_fne='success',
+            nim=nim,
+            qr_code=qr_code
+        )
+        self.load_invoices() # Pour rafraîchir le statut dans la vue principale
+        self.ui.bl_button.setEnabled(True)
+
+    def on_bl_certification_error(self, bl_id, error_message):
+        self.is_task_running = False
+        self.main_window.statusBar().showMessage("Erreur de certification", 5000)
+        QMessageBox.critical(self, "Erreur de Certification FNE", error_message)
+
+        self.bl_model.update_fne_status(
+            bl_id=bl_id,
+            statut_fne='failed',
+            error_message=error_message
+        )
+        self.load_invoices()
+        self.ui.bl_button.setEnabled(True)
 
     def print_bl(self):
+        if self.is_task_running:
+            QMessageBox.warning(self, "Tâche en cours", "Une autre tâche est déjà en cours. Veuillez patienter.")
+            return
+
         invoice_id = self.get_selected_invoice_id()
         if not invoice_id: return
 
@@ -343,6 +462,7 @@ class InvoiceModule(QWidget):
             QMessageBox.critical(self, "Erreur", f"Impossible de charger les données de la facture {invoice_id} pour l'impression du BL.")
             return
 
+        self.is_task_running = True
         company_data = {
             "name": "Mon Entreprise",
             "address": "123 Rue de Test, Abidjan",

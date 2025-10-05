@@ -12,6 +12,7 @@ from client import ClientModule
 from product import ProductModule
 from invoice import InvoiceModule
 from commande import CommandeModule
+from settings import SettingsModule
 
 def main():
     """Point d'entrée principal de l'application refactorisée."""
@@ -60,8 +61,9 @@ def main():
     product_module = ProductModule(db_manager)
     main_window.set_module_widget(4, product_module)
 
-    # Les autres modules (Rapports, Paramètres) ne sont pas implémentés
-    # Leurs placeholders resteront.
+    # Le module Rapports (index 5) n'est pas implémenté.
+    settings_module = SettingsModule(db_manager)
+    main_window.set_module_widget(6, settings_module)
 
     main_window.show()
 
