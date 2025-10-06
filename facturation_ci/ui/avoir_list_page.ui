@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>FacturePage</class>
- <widget class="QWidget" name="FacturePage">
+ <class>AvoirListPage</class>
+ <widget class="QWidget" name="AvoirListPage">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,25 +11,11 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Gestion des Factures</string>
+   <string>Gestion des Avoirs</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
-     <item>
-      <widget class="QPushButton" name="new_invoice_button">
-       <property name="text">
-        <string>Nouvelle Facture</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="Line" name="line">
-       <property name="orientation">
-        <enum>Qt::Vertical</enum>
-       </property>
-      </widget>
-     </item>
      <item>
       <widget class="QPushButton" name="certify_button">
        <property name="text">
@@ -41,23 +27,6 @@
       <widget class="QPushButton" name="print_button">
        <property name="text">
         <string>Imprimer</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QToolButton" name="bl_button">
-       <property name="text">
-        <string>BL</string>
-       </property>
-       <property name="popupMode">
-        <enum>QToolButton::MenuButtonPopup</enum>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="create_credit_note_button">
-       <property name="text">
-        <string>Créer un avoir</string>
        </property>
       </widget>
      </item>

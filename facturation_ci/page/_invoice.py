@@ -1,4 +1,4 @@
-# Form implementation generated from reading ui file 'ui/invoice.ui'
+# Form implementation generated from reading ui file 'facturation_ci/ui/invoice.ui'
 #
 # Created by: PyQt6 UI code generator 6.9.1
 #
@@ -35,10 +35,9 @@ class Ui_FacturePage(object):
         self.bl_button.setPopupMode(QtWidgets.QToolButton.ToolButtonPopupMode.MenuButtonPopup)
         self.bl_button.setObjectName("bl_button")
         self.horizontalLayout.addWidget(self.bl_button)
-        self.credit_note_button = QtWidgets.QToolButton(parent=FacturePage)
-        self.credit_note_button.setPopupMode(QtWidgets.QToolButton.ToolButtonPopupMode.MenuButtonPopup)
-        self.credit_note_button.setObjectName("credit_note_button")
-        self.horizontalLayout.addWidget(self.credit_note_button)
+        self.create_credit_note_button = QtWidgets.QPushButton(parent=FacturePage)
+        self.create_credit_note_button.setObjectName("create_credit_note_button")
+        self.horizontalLayout.addWidget(self.create_credit_note_button)
         spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
         self.horizontalLayout.addItem(spacerItem)
         self.verticalLayout.addLayout(self.horizontalLayout)
@@ -60,14 +59,4 @@ class Ui_FacturePage(object):
         self.certify_button.setText(_translate("FacturePage", "Certifier (FNE)"))
         self.print_button.setText(_translate("FacturePage", "Imprimer"))
         self.bl_button.setText(_translate("FacturePage", "BL"))
-        self.credit_note_button.setText(_translate("FacturePage", "Facture d\'Avoir"))
-
-
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    FacturePage = QtWidgets.QWidget()
-    ui = Ui_FacturePage()
-    ui.setupUi(FacturePage)
-    FacturePage.show()
-    sys.exit(app.exec())
+        self.create_credit_note_button.setText(_translate("FacturePage", "Créer un avoir"))
