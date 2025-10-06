@@ -98,6 +98,26 @@
             border: 1px solid var(--gray-200);
             border-radius: 4px;
         }
+
+        .fne-panel {
+            border: 1px solid var(--primary);
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            background-color: #FFFBEB; /* Jaune très clair */
+        }
+        .fne-panel h3 {
+            font-size: 11px;
+            color: var(--primary-dark);
+            margin-bottom: 5px;
+        }
+        .fne-logo {
+            max-width: 60px;
+            margin-bottom: 5px;
+        }
+        .fne-qr-code {
+            max-width: 80px;
+        }
         
         /* --- TABLEAU --- */
         .items-table {
@@ -224,11 +244,16 @@
             </div>
             <div class="detail-box">
                 <h3>Informations</h3>
-                <div class="invoice-number">#{{ invoice.number }}</div>
-                <div class="invoice-date">Date: {{ invoice.date }}</div>
-                <div class="qr-code">
-                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=Facture_{{ invoice.number }}" alt="QR Code">
+                <div class="invoice-number">#{{ invoice.code_facture }}</div>
+                <div class="invoice-date">Date: {{ invoice.date_facturation.strftime('%d-%m-%Y') }}</div>
+
+                {% if qr_code_uri %}
+                <div class="fne-panel">
+                    <h3>Facture Nº {{ invoice.fne_nim }}</h3>
+                    <img src="{{ fne_logo_uri }}" alt="Logo FNE" class="fne-logo">
+                    <img src="{{ qr_code_uri }}" alt="QR Code FNE" class="fne-qr-code">
                 </div>
+                {% endif %}
             </div>
         </div>
         

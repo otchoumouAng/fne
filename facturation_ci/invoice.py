@@ -248,14 +248,12 @@ class InvoiceModule(QWidget):
             return
 
         self.is_task_running = True
-        # Pour l'instant, les données de l'entreprise sont en dur.
-        # Idéalement, elles viendraient de la BDD via un CompanyInfoModel.
-        company_data = {
-            "name": "Mon Entreprise",
-            "address": "123 Rue de Test, Abidjan",
-            "contact": "contact@entreprise.ci",
-            "register": "RCCM CI-ABJ-2025-X-12345"
-        }
+
+        company_data = self.company_model.get_first()
+        if not company_data:
+            QMessageBox.critical(self, "Erreur", "Les informations de l'entreprise n'ont pas pu être chargées.")
+            self.is_task_running = False
+            return
 
         client_data = {
             "name": invoice_data['details']['client_name'],
@@ -451,12 +449,12 @@ class InvoiceModule(QWidget):
             return
 
         self.is_task_running = True
-        company_data = {
-            "name": "Mon Entreprise",
-            "address": "123 Rue de Test, Abidjan",
-            "contact": "contact@entreprise.ci",
-            "register": "RCCM CI-ABJ-2025-X-12345"
-        }
+
+        company_data = self.company_model.get_first()
+        if not company_data:
+            QMessageBox.critical(self, "Erreur", "Les informations de l'entreprise n'ont pas pu être chargées.")
+            self.is_task_running = False
+            return
 
         client_data = {
             "name": invoice_data['details']['client_name'],
