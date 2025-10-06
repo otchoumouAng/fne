@@ -15,9 +15,10 @@ from core.pdf_generator import PDFGenerator
 from core.worker import Worker
 
 class AvoirListPage(QWidget):
-    def __init__(self, db_manager, parent=None):
+    def __init__(self, db_manager, main_window, parent=None):
         super().__init__(parent)
         self.db_manager = db_manager
+        self.main_window = main_window
         self.avoir_model = FactureAvoirModel(self.db_manager)
         self.company_model = CompanyInfoModel(self.db_manager)
         self.facture_model = FactureModel(self.db_manager)
@@ -121,6 +122,7 @@ class AvoirListPage(QWidget):
         self.thread.start()
         self.ui.certify_button.setEnabled(False)
         self.ui.print_button.setEnabled(False)
+        self.main_window.statusBar().showMessage(f"Génération du PDF pour l'avoir {avoir_data['code_avoir']} en cours...")
 
     def on_avoir_certification_finished(self, avoir_id, fne_data):
         self.is_task_running = False
@@ -220,6 +222,7 @@ class AvoirListPage(QWidget):
     def on_printing_finished(self, output_file):
         self.is_task_running = False
         self.on_selection_changed(None, None)
+        self.main_window.statusBar().showMessage("Prêt", 3000)
         reply = QMessageBox.information(self, "Impression terminée",
             f"Le document a été exporté : {output_file}\n\nVoulez-vous l'ouvrir ?",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
@@ -230,4 +233,5 @@ class AvoirListPage(QWidget):
     def on_printing_error(self, error_message):
         self.is_task_running = False
         self.on_selection_changed(None, None)
+        self.main_window.statusBar().showMessage("Erreur lors de l'impression", 5000)
         QMessageBox.critical(self, "Erreur d'impression", f"Une erreur est survenue:\n{error_message}")

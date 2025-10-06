@@ -56,7 +56,7 @@ def main():
     invoice_module = InvoiceModule(db_manager, user_data, main_window)
     main_window.set_module_widget(2, invoice_module)
 
-    avoir_list_page = AvoirListPage(db_manager)
+    avoir_list_page = AvoirListPage(db_manager, main_window)
     main_window.set_module_widget(3, avoir_list_page)
 
     client_module = ClientModule(db_manager)
