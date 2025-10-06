@@ -1,6 +1,8 @@
 import os
 import asyncio
 import qrcode
+import base64
+import io
 from pathlib import Path
 from jinja2 import Environment, FileSystemLoader
 from playwright.async_api import async_playwright
@@ -16,23 +18,34 @@ class PDFGenerator:
         script_dir = Path(os.path.dirname(os.path.abspath(__file__)))
         self.project_root = script_dir.parent
         template_dir_path = self.project_root / 'templates'
-        self.qrcodes_dir = self.project_root / 'qrcodes'
         self.images_dir = self.project_root / 'images'
-
-        # Créer le dossier pour les QR codes s'il n'existe pas
-        self.qrcodes_dir.mkdir(exist_ok=True)
 
         # Configurer Jinja
         self.env = Environment(loader=FileSystemLoader(template_dir_path))
         self.env.globals['money'] = self.money
         self.template = self.env.get_template(template_file)
 
-    def generate_qr_code(self, data, filename):
-        """Génère un QR code et le sauvegarde dans un fichier."""
+    def _image_to_base64_uri(self, img):
+        """Convertit une image PIL en data URI Base64."""
+        buffered = io.BytesIO()
+        img.save(buffered, format="PNG")
+        img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
+        return f"data:image/png;base64,{img_str}"
+
+    def _file_to_base64_uri(self, filepath):
+        """Convertit un fichier image en data URI Base64."""
+        try:
+            with open(filepath, "rb") as image_file:
+                encoded_string = base64.b64encode(image_file.read()).decode("utf-8")
+            return f"data:image/png;base64,{encoded_string}"
+        except FileNotFoundError:
+            return None
+
+    def generate_qr_code(self, data):
+        """Génère un QR code et le retourne en tant que data URI Base64."""
         if not data:
             return None
 
-        qr_code_path = self.qrcodes_dir / f"{filename}.png"
         qr = qrcode.QRCode(
             version=1,
             error_correction=qrcode.constants.ERROR_CORRECT_L,
@@ -43,10 +56,8 @@ class PDFGenerator:
         qr.make(fit=True)
 
         img = qr.make_image(fill_color="black", back_color="white")
-        img.save(qr_code_path)
 
-        # Retourne le chemin absolu sous forme d'URI pour l'HTML
-        return qr_code_path.as_uri()
+        return self._image_to_base64_uri(img)
 
     @staticmethod
     def money(value, currency="XOF"):
@@ -99,18 +110,12 @@ class PDFGenerator:
         invoice_details = context.get('invoice', {})
         fne_qr_code_data = invoice_details.get('fne_qr_code')
 
-        # Le nom du fichier QR code est basé sur le code du document
-        doc_code = invoice_details.get('code_facture') or \
-                   invoice_details.get('code_bl') or \
-                   invoice_details.get('code_avoir')
-
-        if fne_qr_code_data and doc_code:
-            context['qr_code_uri'] = self.generate_qr_code(fne_qr_code_data, doc_code)
+        if fne_qr_code_data:
+            context['qr_code_uri'] = self.generate_qr_code(fne_qr_code_data)
 
             # Ajouter le logo FNE
             fne_logo_path = self.images_dir / 'fne.png'
-            if fne_logo_path.exists():
-                context['fne_logo_uri'] = fne_logo_path.as_uri()
+            context['fne_logo_uri'] = self._file_to_base64_uri(fne_logo_path)
 
         return self.template.render(**context)
 
