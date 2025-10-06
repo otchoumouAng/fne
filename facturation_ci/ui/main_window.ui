@@ -91,6 +91,14 @@ QStatusBar {
       </item>
       <item>
        <property name="text">
+        <string>Avoirs</string>
+       </property>
+       <property name="flags">
+        <set>Qt::ItemIsSelectable|Qt::ItemIsEnabled</set>
+       </property>
+      </item>
+      <item>
+       <property name="text">
         <string>Clients</string>
        </property>
        <property name="flags">
@@ -178,6 +186,26 @@ QStatusBar {
          <widget class="QLabel" name="label_2">
           <property name="text">
            <string>Contenu des Factures</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">QLabel {
+    font-size: 18px;
+    color: #7f8c8d;
+}</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="avoirs_page">
+       <layout class="QVBoxLayout" name="verticalLayout_avoirs">
+        <item>
+         <widget class="QLabel" name="label_avoirs">
+          <property name="text">
+           <string>Contenu des Avoirs</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignCenter</set>

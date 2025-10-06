@@ -13,6 +13,7 @@ from product import ProductModule
 from invoice import InvoiceModule
 from commande import CommandeModule
 from settings import SettingsModule
+from avoir_list_page import AvoirListPage
 
 def main():
     """Point d'entrée principal de l'application refactorisée."""
@@ -55,15 +56,18 @@ def main():
     invoice_module = InvoiceModule(db_manager, user_data, main_window)
     main_window.set_module_widget(2, invoice_module)
 
+    avoir_list_page = AvoirListPage(db_manager, main_window)
+    main_window.set_module_widget(3, avoir_list_page)
+
     client_module = ClientModule(db_manager)
-    main_window.set_module_widget(3, client_module)
+    main_window.set_module_widget(4, client_module)
 
     product_module = ProductModule(db_manager)
-    main_window.set_module_widget(4, product_module)
+    main_window.set_module_widget(5, product_module)
 
-    # Le module Rapports (index 5) n'est pas implémenté.
+    # Le module Rapports (index 6) n'est pas implémenté.
     settings_module = SettingsModule(db_manager)
-    main_window.set_module_widget(6, settings_module)
+    main_window.set_module_widget(7, settings_module)
 
     main_window.show()
 

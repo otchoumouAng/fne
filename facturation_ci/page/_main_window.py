@@ -1,4 +1,4 @@
-# Form implementation generated from reading ui file 'ui/main_window.ui'
+# Form implementation generated from reading ui file 'facturation_ci/ui/main_window.ui'
 #
 # Created by: PyQt6 UI code generator 6.9.1
 #
@@ -74,6 +74,9 @@ class Ui_MainWindow(object):
         item = QtWidgets.QListWidgetItem()
         item.setFlags(QtCore.Qt.ItemFlag.ItemIsSelectable|QtCore.Qt.ItemFlag.ItemIsEnabled)
         self.nav_menu.addItem(item)
+        item = QtWidgets.QListWidgetItem()
+        item.setFlags(QtCore.Qt.ItemFlag.ItemIsSelectable|QtCore.Qt.ItemFlag.ItemIsEnabled)
+        self.nav_menu.addItem(item)
         self.horizontalLayout.addWidget(self.nav_menu)
         self.stacked_widget = QtWidgets.QStackedWidget(parent=self.centralwidget)
         self.stacked_widget.setStyleSheet("QStackedWidget {\n"
@@ -121,6 +124,19 @@ class Ui_MainWindow(object):
         self.label_2.setObjectName("label_2")
         self.verticalLayout_3.addWidget(self.label_2)
         self.stacked_widget.addWidget(self.invoices_page)
+        self.avoirs_page = QtWidgets.QWidget()
+        self.avoirs_page.setObjectName("avoirs_page")
+        self.verticalLayout_avoirs = QtWidgets.QVBoxLayout(self.avoirs_page)
+        self.verticalLayout_avoirs.setObjectName("verticalLayout_avoirs")
+        self.label_avoirs = QtWidgets.QLabel(parent=self.avoirs_page)
+        self.label_avoirs.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.label_avoirs.setStyleSheet("QLabel {\n"
+"    font-size: 18px;\n"
+"    color: #7f8c8d;\n"
+"}")
+        self.label_avoirs.setObjectName("label_avoirs")
+        self.verticalLayout_avoirs.addWidget(self.label_avoirs)
+        self.stacked_widget.addWidget(self.avoirs_page)
         self.clients_page = QtWidgets.QWidget()
         self.clients_page.setObjectName("clients_page")
         self.verticalLayout_4 = QtWidgets.QVBoxLayout(self.clients_page)
@@ -194,28 +210,21 @@ class Ui_MainWindow(object):
         item = self.nav_menu.item(2)
         item.setText(_translate("MainWindow", "Factures"))
         item = self.nav_menu.item(3)
-        item.setText(_translate("MainWindow", "Clients"))
+        item.setText(_translate("MainWindow", "Avoirs"))
         item = self.nav_menu.item(4)
-        item.setText(_translate("MainWindow", "Produits"))
+        item.setText(_translate("MainWindow", "Clients"))
         item = self.nav_menu.item(5)
-        item.setText(_translate("MainWindow", "Rapports"))
+        item.setText(_translate("MainWindow", "Produits"))
         item = self.nav_menu.item(6)
+        item.setText(_translate("MainWindow", "Rapports"))
+        item = self.nav_menu.item(7)
         item.setText(_translate("MainWindow", "Paramètres"))
         self.nav_menu.setSortingEnabled(__sortingEnabled)
         self.label.setText(_translate("MainWindow", "Contenu du Dashboard"))
         self.label_commandes.setText(_translate("MainWindow", "Contenu des Commandes"))
         self.label_2.setText(_translate("MainWindow", "Contenu des Factures"))
+        self.label_avoirs.setText(_translate("MainWindow", "Contenu des Avoirs"))
         self.label_3.setText(_translate("MainWindow", "Contenu des Clients"))
         self.label_4.setText(_translate("MainWindow", "Contenu des Produits"))
         self.label_5.setText(_translate("MainWindow", "Contenu des Rapports"))
         self.label_6.setText(_translate("MainWindow", "Contenu des Paramètres"))
-
-
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    MainWindow = QtWidgets.QMainWindow()
-    ui = Ui_MainWindow()
-    ui.setupUi(MainWindow)
-    MainWindow.show()
-    sys.exit(app.exec())

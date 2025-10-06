@@ -149,16 +149,19 @@ class FactureModel:
             cursor.close()
 
     def get_fne_invoice_id(self, facture_id):
-        """Récupère l'ID FNE d'une facture."""
+        """
+        Récupère l'ID FNE d'une facture si et seulement si son statut de certification est 'success'.
+        """
         connection = self.db_manager.get_connection()
         if not connection:
             return None
         cursor = connection.cursor()
-        query = "SELECT fne_invoice_id FROM factures WHERE id = %s"
+        query = "SELECT fne_invoice_id FROM factures WHERE id = %s AND statut_fne = 'success'"
         try:
             cursor.execute(query, (facture_id,))
             result = cursor.fetchone()
-            return result[0] if result else None
+            # On vérifie aussi que le résultat n'est pas None ou une chaîne vide
+            return result[0] if result and result[0] else None
         except Error as e:
             print(f"Erreur lors de la récupération de l'ID FNE pour la facture {facture_id}: {e}")
             return None
