@@ -2,12 +2,13 @@
 <html lang="fr">
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Facture d'Avoir #{{ invoice.code_avoir }}</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #2563EB; /* Blue shade for credit notes */
-            --primary-dark: #1D4ED8;
+            --primary: #F97316;
+            --primary-dark: #EA580C;
             --white: #FFFFFF;
             --gray-100: #F3F4F6;
             --gray-200: #E5E7EB;
@@ -17,30 +18,214 @@
             --gray-700: #374151;
             --gray-800: #1F2937;
         }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; line-height: 1.6; color: var(--gray-700); padding: 40px; }
-        h1 { font-size: 24px; font-weight: 600; color: var(--primary); margin-bottom: 10px; border-bottom: 2px solid var(--primary); padding-bottom: 6px; }
-        h3 { font-size: 12px; text-transform: uppercase; color: var(--gray-600); margin-bottom: 8px; }
-        .details-container { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin: 20px 0 30px; }
-        .detail-box { font-size: 13px; }
-        .company-name, .client-name { font-weight: 600; }
-        table { width: 100%; border-collapse: collapse; margin: 20px 0 30px; font-size: 13px; }
-        th { background-color: var(--gray-100); padding: 10px 12px; text-align: left; font-weight: 600; text-transform: uppercase; font-size: 12px; border-bottom: 2px solid var(--gray-300); }
-        td { padding: 10px 12px; border-bottom: 1px solid var(--gray-200); }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            font-weight: 400;
+            line-height: 1.6;
+            color: var(--gray-700);
+            background-color: var(--white);
+            padding: 40px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 10px;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 6px;
+            letter-spacing: -0.5px;
+        }
+
+        h3 {
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--gray-600);
+            margin-bottom: 8px;
+        }
+
+        .invoice-container {
+            background: var(--white);
+        }
+
+        /* --- HEADER : compact sans fond --- */
+        .details-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 16px;
+            margin: 20px 0 30px;
+        }
+
+        .detail-box {
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        .company-name, .client-name {
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: 4px;
+            font-size: 14px;
+        }
+
+        .invoice-number {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 4px;
+        }
+
+        .invoice-date {
+            color: var(--gray-600);
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+        .qr-code {
+            width: 100%;
+            max-width: 70px;
+        }
+
+        .qr-code img {
+            width: 100%;
+            border: 1px solid var(--gray-200);
+            border-radius: 4px;
+        }
+
+        .fne-panel {
+            border: 1px solid var(--primary);
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            background-color: #FFFBEB; /* Jaune très clair */
+        }
+        .fne-panel h3 {
+            font-size: 11px;
+            color: var(--primary-dark);
+            margin-bottom: 5px;
+        }
+        .fne-logo {
+            max-width: 60px;
+            margin-bottom: 5px;
+        }
+        .fne-qr-code {
+            max-width: 80px;
+        }
+
+        /* --- TABLEAU --- */
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0 30px;
+            font-size: 13px;
+        }
+
+        .items-table th {
+            background-color: var(--gray-100);
+            padding: 10px 12px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--gray-600);
+            text-transform: uppercase;
+            font-size: 12px;
+            border-bottom: 2px solid var(--gray-300);
+        }
+
+        .items-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--gray-200);
+            vertical-align: top;
+        }
+
+        .items-table tr:hover td {
+            background-color: #FAFAFA;
+        }
+
+        .item-reference {
+            font-size: 11px;
+            color: var(--gray-500);
+            margin-top: 3px;
+        }
+
+        .text-center { text-align: center; }
         .text-right { text-align: right; }
-        .totals-container { display: flex; justify-content: flex-end; }
-        .totals { width: 300px; padding: 16px; border: 1px solid var(--gray-200); border-radius: 6px; }
-        .total-row { display: flex; justify-content: space-between; padding: 6px 0; }
-        .grand-total { border-top: 1px solid var(--gray-300); margin-top: 10px; padding-top: 10px; font-size: 16px; font-weight: 600; color: var(--primary-dark); }
-        .notes { margin-top: 30px; padding: 16px; background-color: #FAFAFA; border-radius: 4px; text-align: center; }
-        .fne-panel { border: 1px solid var(--primary); border-radius: 8px; padding: 10px; text-align: center; background-color: #EFF6FF; }
-        .fne-panel h3 { font-size: 11px; color: var(--primary-dark); margin-bottom: 5px; }
-        .fne-logo { max-width: 60px; margin-bottom: 5px; }
-        .fne-qr-code { max-width: 80px; }
+
+        /* --- TOTALS --- */
+        .totals-container {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 15px;
+        }
+
+        .totals {
+            width: 300px;
+            padding: 16px;
+            border-radius: 6px;
+            background-color: var(--white);
+            border: 1px solid var(--gray-200);
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            font-size: 13px;
+        }
+
+        .subtotal {
+            border-bottom: 1px dashed var(--gray-300);
+            margin-bottom: 6px;
+            padding-bottom: 6px;
+        }
+
+        .grand-total {
+            border-top: 1px solid var(--gray-300);
+            margin-top: 10px;
+            padding-top: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--primary-dark);
+        }
+
+        /* --- NOTES --- */
+        .notes {
+            margin-top: 30px;
+            padding: 16px;
+            background-color: #FAFAFA;
+            border-radius: 4px;
+            font-size: 13px;
+            line-height: 1.5;
+            text-align: center;
+        }
+
+        /* --- FOOTER --- */
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 12px;
+            color: var(--gray-500);
+            padding-top: 15px;
+            border-top: 1px solid var(--gray-200);
+        }
+
+        /* --- Responsive --- */
+        @media (max-width: 768px) {
+            body { padding: 20px; }
+            .details-container { grid-template-columns: 1fr; }
+            .items-table { display: block; overflow-x: auto; }
+            .totals { width: 100%; }
+        }
     </style>
 </head>
 <body>
-    <div>
+    <div class="invoice-container">
         <h1>Facture d'Avoir</h1>
 
         <div class="details-container">
@@ -49,6 +234,7 @@
                 <div class="company-name">{{ company.name }}</div>
                 <div>{{ company.address | replace('\n', '<br>') | safe }}</div>
                 <div>{{ company.contact }}</div>
+                <div>{{ company.register }}</div>
             </div>
             <div class="detail-box">
                 <h3>Client</h3>
@@ -58,11 +244,12 @@
             </div>
             <div class="detail-box">
                 <h3>Informations</h3>
-                <div><strong>#{{ invoice.code_avoir }}</strong></div>
-                <div>Date: {{ invoice.date_creation.strftime('%d-%m-%Y') }}</div>
-                <div>Facture d'origine: {{ invoice.code_facture_origine }}</div>
+                <div class="invoice-number">#{{ invoice.code_avoir }}</div>
+                <div class="invoice-date">Date: {{ invoice.date_creation.strftime('%d-%m-%Y') }}</div>
+                <div class="invoice-date">Facture d'origine: {{ invoice.code_facture_origine }}</div>
+
                 {% if qr_code_uri %}
-                <div class="fne-panel" style="margin-top:10px;">
+                <div class="fne-panel">
                     <h3>Avoir Nº {{ invoice.fne_nim }}</h3>
                     <img src="{{ fne_logo_uri }}" alt="Logo FNE" class="fne-logo">
                     <img src="{{ qr_code_uri }}" alt="QR Code FNE" class="fne-qr-code">
@@ -71,22 +258,29 @@
             </div>
         </div>
 
-        <table>
+        <h3>Détails de l'avoir</h3>
+        <table class="items-table">
             <thead>
                 <tr>
+                    <th>#</th>
                     <th>Description</th>
-                    <th class="text-right">Quantité</th>
-                    <th class="text-right">Prix Unitaire</th>
-                    <th class="text-right">Total HT</th>
+                    <th class="text-center">Qté</th>
+                    <th class="text-right">PU</th>
+                    <th class="text-right">TVA</th>
+                    <th class="text-right">Total</th>
                 </tr>
             </thead>
             <tbody>
                 {% for item in details %}
                 <tr>
-                    <td>{{ item.description }}</td>
-                    <td class="text-right">{{ item.quantity }}</td>
-                    <td class="text-right">{{ money(item.unit_price) }}</td>
-                    <td class="text-right">{{ money(item.quantity * item.unit_price) }}</td>
+                    <td class="text-center">{{ loop.index }}</td>
+                    <td>
+                        <div>{{ item.description }}</div>
+                    </td>
+                    <td class="text-center">{{ item.quantity }}</td>
+                    <td class="text-right">{{ money(item.unit_price, invoice.get("currency", "XOF")) }}</td>
+                    <td class="text-right">{{ item.tax_rate }}%</td>
+                    <td class="text-right">{{ money(item.quantity * item.unit_price, invoice.get("currency", "XOF")) }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -94,26 +288,29 @@
 
         <div class="totals-container">
             <div class="totals">
-                <div class="total-row">
-                    <span>Sous-total HT</span>
-                    <span>{{ money(subtotal) }}</span>
+                <div class="total-row subtotal">
+                    <span>Sous-total</span>
+                    <span>{{ money(subtotal, invoice.get("currency", "XOF")) }}</span>
                 </div>
-                {% for rate, amount in taxes.items() %}
-                <div class="total-row">
-                    <span>TVA ({{ rate }}%)</span>
-                    <span>{{ money(amount) }}</span>
+                {% for rate, val in taxes.items() %}
+                <div class="total-row tax-row">
+                    <span>TVA {{ rate }}%</span>
+                    <span>{{ money(val, invoice.get("currency", "XOF")) }}</span>
                 </div>
                 {% endfor %}
                 <div class="total-row grand-total">
-                    <span>Total TTC</span>
-                    <span>{{ money(grand_total) }}</span>
+                    <span>Total</span>
+                    <span>{{ money(grand_total, invoice.get("currency", "XOF")) }}</span>
                 </div>
             </div>
         </div>
 
+
         <div class="notes">
             <em>Total en lettres : {{ grand_total_words }}</em>
         </div>
+
+
     </div>
 </body>
 </html>

@@ -94,9 +94,9 @@ class CommandeEditorDialog(QDialog):
                 QStandardItem(item['description']),
                 QStandardItem(item['description']),
                 QStandardItem(str(item['quantity'])),
-                QStandardItem(f"{item['unit_price']:.2f}"),
-                QStandardItem(f"{item['tax_rate']:.2f}"),
-                QStandardItem(f"{total_ht:.2f}")
+                QStandardItem(f"{item['unit_price']:.3f}"),
+                QStandardItem(f"{item['tax_rate']:.3f}"),
+                QStandardItem(f"{total_ht:.3f}")
             ]
             self.items_model.appendRow(row)
         self.update_totals()
@@ -115,11 +115,11 @@ class CommandeEditorDialog(QDialog):
         if product:
             price = float(product.get('unit_price', 0))
             tax_rate = float(product.get('tax_rate', 0))
-            self.ui.price_value.setText(f"{price:.2f}")
-            self.ui.tax_rate_value.setText(f"{tax_rate:.2f}%")
+            self.ui.price_value.setText(f"{price:.3f}")
+            self.ui.tax_rate_value.setText(f"{tax_rate:.3f}%")
         else:
-            self.ui.price_value.setText("0.00")
-            self.ui.tax_rate_value.setText("0.00%")
+            self.ui.price_value.setText("0.000")
+            self.ui.tax_rate_value.setText("0.000%")
 
     def _add_item_to_table(self):
         product = self.ui.product_combobox.currentData()
@@ -134,8 +134,8 @@ class CommandeEditorDialog(QDialog):
         row = [
             QStandardItem(str(product['id'])), QStandardItem(product['name']),
             QStandardItem(product['description']), QStandardItem(str(quantity)),
-            QStandardItem(f"{price:.2f}"), QStandardItem(f"{tax_rate:.2f}"),
-            QStandardItem(f"{total_ht:.2f}")
+            QStandardItem(f"{price:.3f}"), QStandardItem(f"{tax_rate:.3f}"),
+            QStandardItem(f"{total_ht:.3f}")
         ]
         self.items_model.appendRow(row)
         self.update_totals()
@@ -166,9 +166,9 @@ class CommandeEditorDialog(QDialog):
             except (ValueError, TypeError, AttributeError):
                 continue
         total_ttc = total_ht + total_tax
-        self.ui.total_ht_value.setText(f"{total_ht:,.2f}".replace(",", " "))
-        self.ui.total_tax_value.setText(f"{total_tax:,.2f}".replace(",", " "))
-        self.ui.total_ttc_value.setText(f"{total_ttc:,.2f}".replace(",", " "))
+        self.ui.total_ht_value.setText(f"{total_ht:,.3f}".replace(",", " "))
+        self.ui.total_tax_value.setText(f"{total_tax:,.3f}".replace(",", " "))
+        self.ui.total_ttc_value.setText(f"{total_ttc:,.3f}".replace(",", " "))
 
     def get_data(self):
         client_id = self.ui.client_combobox.currentData()

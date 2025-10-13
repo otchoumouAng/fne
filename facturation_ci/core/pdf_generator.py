@@ -64,9 +64,9 @@ class PDFGenerator:
         if value is None:
             value = 0
         try:
-            return f"{float(value):,.0f} {currency}".replace(",", " ")
+            return f"{float(value):,.3f} {currency}".replace(",", " ")
         except (ValueError, TypeError):
-            return f"{0:,.0f} {currency}".replace(",", " ")
+            return f"{0:,.3f} {currency}".replace(",", " ")
 
     @staticmethod
     def currency_to_words(currency):

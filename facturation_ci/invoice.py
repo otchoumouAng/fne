@@ -102,7 +102,7 @@ class InvoiceModule(QWidget):
                 QStandardItem(inv['code_commande']),
                 QStandardItem(inv['client_name']),
                 QStandardItem(inv['date_facturation'].strftime('%Y-%m-%d')),
-                QStandardItem(f"{inv['total_ttc']:.2f}"),
+                QStandardItem(f"{inv['total_ttc']:.3f}"),
                 QStandardItem(inv['statut_fne'])
             ]
             model.appendRow(row)
