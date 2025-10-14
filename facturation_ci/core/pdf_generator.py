@@ -91,7 +91,7 @@ class PDFGenerator:
                 line_ht = item.get("quantity", 0) * item.get("unit_price", 0)
                 subtotal += line_ht
                 tax_rate = item.get("tax_rate", 0)
-                tax_amt = round(line_ht * tax_rate / 100)
+                tax_amt = line_ht * tax_rate / 100
                 taxes[tax_rate] = taxes.get(tax_rate, 0) + tax_amt
             total_tax = sum(taxes.values())
             grand_total = subtotal + total_tax

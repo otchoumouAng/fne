@@ -93,7 +93,7 @@ class CommandeEditorDialog(QDialog):
                 QStandardItem(str(item['product_id'])),
                 QStandardItem(item['description']),
                 QStandardItem(item['description']),
-                QStandardItem(str(item['quantity'])),
+                QStandardItem(f"{item['quantity']:.0f}"),
                 QStandardItem(f"{item['unit_price']:.2f}"),
                 QStandardItem(f"{item['tax_rate']:.2f}"),
                 QStandardItem(f"{total_ht:.2f}")
@@ -133,7 +133,7 @@ class CommandeEditorDialog(QDialog):
         total_ht = price * quantity
         row = [
             QStandardItem(str(product['id'])), QStandardItem(product['name']),
-            QStandardItem(product['description']), QStandardItem(str(quantity)),
+            QStandardItem(product['description']), QStandardItem(f"{quantity:.0f}"),
             QStandardItem(f"{price:.2f}"), QStandardItem(f"{tax_rate:.2f}"),
             QStandardItem(f"{total_ht:.2f}")
         ]
@@ -195,7 +195,7 @@ class CommandeEditorDialog(QDialog):
             item = {
                 'product_id': int(self.items_model.item(row, 0).text()),
                 'description': self.items_model.item(row, 2).text(),
-                'quantity': float(self.items_model.item(row, 3).text()),
+                'quantity': int(self.items_model.item(row, 3).text()),
                 'unit_price': float(self.items_model.item(row, 4).text()),
                 'tax_rate': float(self.items_model.item(row, 5).text())
             }
