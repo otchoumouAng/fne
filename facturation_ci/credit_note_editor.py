@@ -55,9 +55,9 @@ class CreditNoteEditorDialog(QDialog):
                 QStandardItem(str(item['id'])), # ID Commande Item
                 QStandardItem(str(item['product_id'])),
                 QStandardItem(item['description']),
-                QStandardItem(str(item['quantity'])),
-                QStandardItem(f"{item['unit_price']:.2f}"),
-                QStandardItem(f"{item['tax_rate']:.2f}")
+                QStandardItem(f"{item['quantity']:.0f}"),
+                QStandardItem(f"{item['unit_price']:.3f}"),
+                QStandardItem(f"{item['tax_rate']:.3f}")
             ]
             self.items_model.appendRow(row)
 
@@ -81,9 +81,9 @@ class CreditNoteEditorDialog(QDialog):
         total_tva = 0
         for row in range(self.items_model.rowCount()):
             try:
-                quantity = float(self.items_model.item(row, 2).text())
-                price = float(self.items_model.item(row, 3).text())
-                tax_rate = float(self.items_model.item(row, 4).text())
+                quantity = float(self.items_model.item(row, 3).text())
+                price = float(self.items_model.item(row, 4).text())
+                tax_rate = float(self.items_model.item(row, 5).text())
 
                 row_total_ht = quantity * price
                 row_total_tva = row_total_ht * (tax_rate / 100)
@@ -94,9 +94,9 @@ class CreditNoteEditorDialog(QDialog):
                 continue
 
         total_ttc = total_ht + total_tva
-        self.ui.value_total_ht.setText(f"{total_ht:,.2f}".replace(",", " "))
-        self.ui.value_total_tax.setText(f"{total_tva:,.2f}".replace(",", " "))
-        self.ui.value_total_ttc.setText(f"{total_ttc:,.2f}".replace(",", " "))
+        self.ui.value_total_ht.setText(f"{total_ht:,.3f}".replace(",", " "))
+        self.ui.value_total_tax.setText(f"{total_tva:,.3f}".replace(",", " "))
+        self.ui.value_total_ttc.setText(f"{total_ttc:,.3f}".replace(",", " "))
 
     def get_data(self):
         """Retourne les données nécessaires pour créer l'enregistrement de l'avoir."""
@@ -110,7 +110,7 @@ class CreditNoteEditorDialog(QDialog):
                 'commande_item_id': int(self.items_model.item(row, 0).text()),
                 'product_id': int(self.items_model.item(row, 1).text()),
                 'description': self.items_model.item(row, 2).text(),
-                'quantity': float(self.items_model.item(row, 3).text()),
+                'quantity': int(self.items_model.item(row, 3).text()),
                 'unit_price': float(self.items_model.item(row, 4).text()),
                 'tax_rate': float(self.items_model.item(row, 5).text())
             }
