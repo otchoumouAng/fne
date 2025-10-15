@@ -194,12 +194,17 @@ class AvoirListPage(QWidget):
         }
 
         generator = PDFGenerator(template_file="avoir.html")
+        # Le template attend les données de l'avoir sous la clé 'invoice'
+        # et les données FNE (nim, qr_code) sont des champs de `avoir_data`
         context = {
             "company": company_info,
             "client": client_info,
-            "invoice": avoir_data,
-            "details": avoir_data['lignes_avoir']
+            "invoice": avoir_data,  # `avoir_data` contient fne_nim, fne_qr_code etc.
+            "details": avoir_data['lignes_avoir'],
         }
+
+        # Le PDFGenerator s'attend à trouver `fne_qr_code` dans `context['invoice']`
+        # ce qui est déjà le cas. Il générera alors `qr_code_uri` et `fne_logo_uri`.
         html_content = generator.render_html(**context)
         output_file = f"Avoir-{avoir_data['code_avoir']}.pdf"
 
