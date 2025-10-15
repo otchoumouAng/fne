@@ -253,7 +253,7 @@
                 <div class="invoice-date">Date: {{ invoice.date_creation.strftime('%d-%m-%Y') }}</div>
                 <div class="invoice-date">Facture d'origine: {{ invoice.code_facture_origine }}</div>
 
-                {% if qr_code_uri %}
+                {% if invoice.fne_nim %}
                 <div class="fne-panel">
                     <h3>Avoir Nº {{ invoice.fne_nim }}</h3>
                     <img src="{{ fne_logo_uri }}" alt="Logo FNE" class="fne-logo">
