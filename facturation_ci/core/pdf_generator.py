@@ -117,6 +117,10 @@ class PDFGenerator:
             fne_logo_path = self.images_dir / 'fne.png'
             context['fne_logo_uri'] = self._file_to_base64_uri(fne_logo_path)
 
+        # Ajouter le logo de l'entreprise
+        company_logo_path = self.images_dir / 'logo_sogici.png'
+        context['company_logo_uri'] = self._file_to_base64_uri(company_logo_path)
+
         return self.template.render(**context)
 
     async def generate_pdf(self, html_content, output_file="document.pdf"):

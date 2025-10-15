@@ -188,6 +188,11 @@
 </head>
 <body>
     <div class="invoice-container">
+        <div style="text-align: left; margin-bottom: 20px;">
+            {% if company_logo_uri %}
+                <img src="{{ company_logo_uri }}" alt="Company Logo" style="max-height: 80px;">
+            {% endif %}
+        </div>
         <h1>Bon de Livraison</h1>
 
         <div class="details-container">
