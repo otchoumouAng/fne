@@ -16,7 +16,7 @@ class DBManager:
             self.host = "127.0.0.1"
             self.database = "s_facture_plus"
             self.user = "root"
-            self.password = "Admin@1234"  # REMPLACER pour la production
+            self.password = ""  
             self.connection = None
             # La connexion n'est pas établie ici, mais au premier appel de get_connection
 
