@@ -18,8 +18,8 @@ body {
 
 .container {
     max-width: 800px;
-    margin: 20px auto;
-    padding: 20px;
+    margin: 40px auto;
+    padding: 30px;
     background-color: var(--background-color);
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0,0,0,0.05);
@@ -27,48 +27,71 @@ body {
 
 /* --- HEADER --- */
 .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
+    align-items: center;
+    gap: 20px;
     padding-bottom: 20px;
     border-bottom: 3px solid var(--primary-color);
     margin-bottom: 30px;
 }
 
+.company-logo {
+    justify-self: start;
+}
+
 .company-logo img {
-    max-width: 180px;
+    max-width: 160px;
     height: auto;
 }
 
 .company-details {
-    text-align: right;
+    text-align: center;
 }
 
 .fne-details {
-    text-align: center;
+    justify-self: end;
     border: 1px solid var(--border-color);
-    padding: 10px;
+    padding: 8px;
     border-radius: 5px;
     background-color: var(--gray-light);
-    max-width: 180px;
+    max-width: 150px;
 }
-
+.fne-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 5px;
+}
+.fne-logo {
+    width: 30px;
+    height: auto;
+}
 .fne-details h3 {
     font-size: 11px;
     color: var(--primary-color);
-    margin-bottom: 5px;
+    margin: 0;
     font-weight: bold;
 }
-
-.fne-details img {
+.fne-body {
+    text-align: center;
+}
+.fne-qr-code {
     max-width: 80px;
+}
+.fne-nim {
+    margin-top: 5px;
+    font-size: 10px;
+    font-weight: bold;
 }
 
 .company-details .name {
-    font-size: 18px;
+    font-size: 16px;
     font-weight: bold;
     color: var(--primary-color);
     margin-bottom: 5px;
+    text-transform: none;
 }
 
 .document-title {

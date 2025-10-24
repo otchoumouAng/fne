@@ -12,21 +12,25 @@
                 <img src="{{ logo_uri }}" alt="Logo {{ company.name }}">
             </div>
 
-            {% if qr_code_uri %}
-            <div class="fne-details">
-                <h3>Avoir Certifié FNE</h3>
-                <img src="{{ fne_logo_uri }}" alt="Logo FNE" style="max-width: 60px; margin-bottom: 5px;">
-                <img src="{{ qr_code_uri }}" alt="QR Code FNE">
-                <div><strong>NIM C :</strong> {{ avoir.fne_nim_c }}</div>
-            </div>
-            {% endif %}
-
             <div class="company-details">
-                <div class="name">{{ company.name }}</div>
+                <div class="name">SOCIETE GENERALE D’INDUSTRIES EN COTE D’IVOIRE</div>
                 <div>{{ company.address | replace('\n', '<br>') | safe }}</div>
                 <div>{{ company.contact }}</div>
                 <div>{{ company.register }}</div>
             </div>
+
+            {% if qr_code_uri %}
+            <div class="fne-details">
+                <div class="fne-header">
+                    <img src="{{ fne_logo_uri }}" alt="Logo FNE" class="fne-logo">
+                    <h3>Avoir Certifié</h3>
+                </div>
+                <div class="fne-body">
+                    <img src="{{ qr_code_uri }}" alt="QR Code FNE" class="fne-qr-code">
+                    <div class="fne-nim"><strong>NIM :</strong> {{ avoir.fne_nim }}</div>
+                </div>
+            </div>
+            {% endif %}
         </div>
 
         <div class="document-title">Avoir</div>
