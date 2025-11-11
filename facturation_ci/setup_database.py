@@ -356,13 +356,13 @@ def insert_default_company(cursor):
 
     print("  - Aucune information d'entreprise trouvée, insertion des données par défaut...")
     company_data = (
-        "Mon Entreprise (A MODIFIER)",
-        "123, Rue de l'Exemple, Ville, Pays",
+        "SOCIETE GENERALE D'INDUSTRIES EN COTE D'IVOIRE",
+        "225, Z.I, Abidjan, Côte d'Ivoire",
         "+225 0102030405",
         "contact@monentreprise.ci",
         "CI-XXX-1234567-X",
-        "Mon Point de Vente",
-        "VOTRE_CLE_API_FNE_A_REMPLACER"
+        "Sogici",
+        "j33NYEEKXzXxSL88nXiqM8yWRSkO7hJv"
     )
     query = """
         INSERT INTO company_info (name, address, phone, email, ncc, point_of_sale, fne_api_key)
@@ -381,7 +381,7 @@ def main():
     try:
         db_host = "127.0.0.1"
         db_user = "root"
-        db_password = ""
+        db_password = "Admin@1234"
         db_name = "s_facture_plus"
 
         # Connexion au serveur MySQL

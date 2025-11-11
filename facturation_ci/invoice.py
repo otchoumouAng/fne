@@ -169,6 +169,7 @@ class InvoiceModule(QWidget):
             "email": invoice_data['details'].get('client_email')
         }
 
+
         self.is_task_running = True
         self.thread = QThread()
         self.worker = Worker(

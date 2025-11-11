@@ -87,7 +87,6 @@ class CreditNoteListDialog(QDialog):
 
         items_to_refund = []
         for item in avoir_data['lignes_avoir']:
-            # L'ID de la ligne de commande originale est maintenant stocké dans l'avoir
             commande_item_id = item['commande_item_id']
             fne_item_id = fne_item_id_map.get(commande_item_id)
             if not fne_item_id:

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <title>Avoir #{{ avoir.code_avoir }}</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="company-logo">
+                <img src="{{ logo_uri }}" alt="Logo {{ company.name }}">
+            </div>
+
+            <div class="company-details">
+                <div class="name">SOCIETE GENERALE D’INDUSTRIES EN COTE D’IVOIRE</div>
+                <div>{{ company.address | replace('\n', '<br>') | safe }}</div>
+                <div>{{ company.contact }}</div>
+                <div>{{ company.register }}</div>
+            </div>
+
+            {% if qr_code_uri %}
+            <div class="fne-details">
+                <div class="fne-header">
+                    <img src="{{ fne_logo_uri }}" alt="Logo FNE" class="fne-logo">
+                    <h3>Avoir Certifié</h3>
+                </div>
+                <div class="fne-body">
+                    <img src="{{ qr_code_uri }}" alt="QR Code FNE" class="fne-qr-code">
+                    <div class="fne-nim"><strong>NIM :</strong> {{ avoir.fne_nim }}</div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="document-title">Avoir</div>
+
+        <div class="details-section">
+            <div class="details-box">
+                <h3>Client</h3>
+                <div class="client-name">{{ client.name }}</div>
+                <div>{{ client.address | replace('\n', '<br>') | safe }}</div>
+                <div>{{ client.contact }}</div>
+            </div>
+            <div class="details-box" style="text-align: right;">
+                <h3>Informations</h3>
+                <div><strong>Avoir N° :</strong> {{ avoir.code_avoir }}</div>
+                <div><strong>Date :</strong> {{ avoir.date_creation.strftime('%d-%m-%Y') }}</div>
+                <div><strong>Facture d'origine :</strong> {{ invoice.code_facture }}</div>
+            </div>
+        </div>
+
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th style="width: 5%;">#</th>
+                    <th>Description</th>
+                    <th class="text-center" style="width: 10%;">Qté</th>
+                    <th class="text-right" style="width: 15%;">P.U.</th>
+                    <th class="text-right" style="width: 15%;">TVA</th>
+                    <th class="text-right" style="width: 20%;">Total HT</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in details %}
+                <tr>
+                    <td class="text-center">{{ loop.index }}</td>
+                    <td>
+                        <div>{{ item.description }}</div>
+                    </td>
+                    <td class="text-center">{{ item.quantity }}</td>
+                    <td class="text-right">{{ money(item.unit_price, avoir.get("currency", "XOF")) }}</td>
+                    <td class="text-right">{{ item.tax_rate }}%</td>
+                    <td class="text-right">{{ money(item.quantity * item.unit_price, avoir.get("currency", "XOF")) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="totals-section">
+            <table class="totals-table">
+                <tr>
+                    <td>Sous-total</td>
+                    <td class="text-right">{{ money(subtotal, avoir.get("currency", "XOF")) }}</td>
+                </tr>
+                {% for rate, val in taxes.items() %}
+                <tr>
+                    <td>TVA {{ rate }}%</td>
+                    <td class="text-right">{{ money(val, avoir.get("currency", "XOF")) }}</td>
+                </tr>
+                {% endfor %}
+                <tr class="grand-total">
+                    <td>Total TTC</td>
+                    <td class="text-right">{{ money(grand_total, avoir.get("currency", "XOF")) }}</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="fne-section">
+            <div class="notes-box">
+                <strong>Total en lettres :</strong><br>
+                <em>{{ grand_total_words }}</em>
+            </div>
+        </div>
+
+        <div class="footer">
+            {{ company.name }} - {{ company.address }} - {{ company.contact }} <br>
+            {{ company.register }}
+        </div>
+    </div>
+</body>
+</html>

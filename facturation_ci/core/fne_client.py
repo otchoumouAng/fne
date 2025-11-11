@@ -55,7 +55,8 @@ def certify_document(invoice_full_data: dict, company_info: dict, client_info: d
                     "reference": str(item.get('id')),
                     "description": item['description'],
                     "quantity": float(item['quantity']),
-                    "amount": float(item['quantity']) * float(item['unit_price'])
+                    #"amount": float(item['quantity']) * float(item['unit_price']),
+                    "amount": float(item['unit_price'])
                 }
                 for item in invoice_full_data.get('items', [])
             ]
@@ -78,7 +79,8 @@ def certify_document(invoice_full_data: dict, company_info: dict, client_info: d
                     "reference": str(item.get('id')),
                     "description": item['description'],
                     "quantity": float(item['quantity']),
-                    "amount": float(item['quantity']) * float(item['unit_price']),
+                    #"amount": float(item['quantity']) * float(item['unit_price']),
+                    "amount": float(item['unit_price']),
                     "taxes": ["TVA"]
                 }
                 for item in invoice_full_data.get('items', [])
@@ -93,6 +95,10 @@ def certify_document(invoice_full_data: dict, company_info: dict, client_info: d
         response.raise_for_status()
 
         response_data = response.json()
+
+        print("--- RESPONSE FNE ---")
+        print(response_data)
+        print("---------------------")
 
         if "reference" in response_data and "token" in response_data:
             nim = response_data.get("reference")

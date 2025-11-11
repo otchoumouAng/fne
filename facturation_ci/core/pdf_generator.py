@@ -109,9 +109,18 @@ class PDFGenerator:
         })
 
 
+        # Ajouter le logo de l'entreprise
+        logo_path = self.images_dir / 'logo_sogici.png'
+        context['logo_uri'] = self._file_to_base64_uri(logo_path)
+
         # Générer le QR code si les données FNE sont présentes
-        invoice_details = context.get('invoice', {})
-        fne_qr_code_data = invoice_details.get('fne_qr_code')
+        fne_qr_code_data = None
+        if self.template.name == 'invoice.html':
+            invoice_details = context.get('invoice', {})
+            fne_qr_code_data = invoice_details.get('fne_qr_code')
+        elif self.template.name == 'avoir.html':
+            avoir_details = context.get('avoir', {})
+            fne_qr_code_data = avoir_details.get('fne_qr_code')
 
         if fne_qr_code_data:
             context['qr_code_uri'] = self.generate_qr_code(fne_qr_code_data)
@@ -124,10 +133,23 @@ class PDFGenerator:
         return self.template.render(**context)
 
     async def generate_pdf(self, html_content, output_file="document.pdf"):
+        # Lire le contenu du fichier CSS
+        css_path = self.project_root / 'templates' / 'style.css'
+        try:
+            with open(css_path, 'r') as f:
+                css_content = f.read()
+        except FileNotFoundError:
+            css_content = "" # Continuer sans CSS si le fichier n'est pas trouvé
+
         async with async_playwright() as p:
             browser = await p.chromium.launch()
             page = await browser.new_page()
             await page.set_content(html_content)
+
+            # Injecter le CSS
+            if css_content:
+                await page.add_style_tag(content=css_content)
+
             await page.pdf(
                 path=output_file,
                 format="A4",

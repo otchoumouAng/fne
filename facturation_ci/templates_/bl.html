@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <title>Bon de Livraison #{{ bl.code_bl }}</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="company-logo">
+                <img src="{{ logo_uri }}" alt="Logo {{ company.name }}">
+            </div>
+            <div class="company-details">
+                <div class="name">{{ company.name }}</div>
+                <div>{{ company.address | replace('\n', '<br>') | safe }}</div>
+                <div>{{ company.contact }}</div>
+                <div>{{ company.register }}</div>
+            </div>
+        </div>
+
+        <div class="document-title">Bon de Livraison</div>
+
+        <div class="details-section">
+            <div class="details-box">
+                <h3>Client</h3>
+                <div class="client-name">{{ client.name }}</div>
+                <div>{{ client.address | replace('\n', '<br>') | safe }}</div>
+                <div>{{ client.contact }}</div>
+            </div>
+            <div class="details-box" style="text-align: right;">
+                <h3>Informations</h3>
+                <div><strong>BL N° :</strong> {{ bl.code_bl }}</div>
+                <div><strong>Date :</strong> {{ bl.date_creation.strftime('%d-%m-%Y') }}</div>
+                 <div><strong>Facture associée :</strong> {{ invoice.code_facture }}</div>
+            </div>
+        </div>
+
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th style="width: 5%;">#</th>
+                    <th>Description</th>
+                    <th class="text-center" style="width: 15%;">Quantité Livrée</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in details %}
+                <tr>
+                    <td class="text-center">{{ loop.index }}</td>
+                    <td>
+                        <div>{{ item.description }}</div>
+                    </td>
+                    <td class="text-center">{{ item.quantity }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="footer" style="margin-top: 100px;">
+            <table style="width: 100%; text-align: center;">
+                <tr>
+                    <td style="width: 50%;">
+                        <p><strong>Pour la société</strong></p>
+                        <p style="margin-top: 60px;">(Signature & Cachet)</p>
+                    </td>
+                    <td style="width: 50%;">
+                        <p><strong>Pour le client</strong></p>
+                         <p style="margin-top: 60px;">(Signature & Cachet)</p>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+    </div>
+</body>
+</html>
