@@ -82,6 +82,8 @@ class PDFGenerator:
 
     def render_html(self, **context):
         details = context.get('details', [])
+        
+        context['entreprise_logo_uri'] = self._file_to_base64_uri(self.images_dir / 'entreprise_logo.png')
 
         # Initialiser les totaux pour qu'ils existent toujours dans le contexte
         subtotal, taxes, grand_total, total_tax = 0, {}, 0, 0
@@ -106,6 +108,7 @@ class PDFGenerator:
             'fne_logo_uri': None
         })
 
+
         # Générer le QR code si les données FNE sont présentes
         invoice_details = context.get('invoice', {})
         fne_qr_code_data = invoice_details.get('fne_qr_code')
@@ -116,6 +119,7 @@ class PDFGenerator:
             # Ajouter le logo FNE
             fne_logo_path = self.images_dir / 'fne.png'
             context['fne_logo_uri'] = self._file_to_base64_uri(fne_logo_path)
+
 
         return self.template.render(**context)
 
