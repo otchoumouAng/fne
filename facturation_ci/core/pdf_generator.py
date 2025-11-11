@@ -119,7 +119,7 @@ class PDFGenerator:
             invoice_details = context.get('invoice', {})
             fne_qr_code_data = invoice_details.get('fne_qr_code')
         elif self.template.name == 'avoir.html':
-            avoir_details = context.get('avoir', {})
+            avoir_details = context.get('invoice', {})
             fne_qr_code_data = avoir_details.get('fne_qr_code')
 
         if fne_qr_code_data:
