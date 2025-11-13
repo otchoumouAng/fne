@@ -94,7 +94,7 @@ class CreditNoteListDialog(QDialog):
                 return
             items_to_refund.append({
                 "id": fne_item_id,
-                "quantity": float(item['quantity'])
+                "quantity": int(item['quantity'])
             })
 
         company_info = self.company_model.get_first()

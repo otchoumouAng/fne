@@ -54,8 +54,7 @@ def certify_document(invoice_full_data: dict, company_info: dict, client_info: d
                 {
                     "reference": str(item.get('id')),
                     "description": item['description'],
-                    "quantity": float(item['quantity']),
-                    #"amount": float(item['quantity']) * float(item['unit_price']),
+                    "quantity": int(item['quantity']),
                     "amount": float(item['unit_price'])
                 }
                 for item in invoice_full_data.get('items', [])
@@ -78,8 +77,7 @@ def certify_document(invoice_full_data: dict, company_info: dict, client_info: d
                 {
                     "reference": str(item.get('id')),
                     "description": item['description'],
-                    "quantity": float(item['quantity']),
-                    #"amount": float(item['quantity']) * float(item['unit_price']),
+                    "quantity": int(item['quantity']),
                     "amount": float(item['unit_price']),
                     "taxes": ["TVA"]
                 }
@@ -172,6 +170,11 @@ def refund_invoice(api_key: str, original_fne_invoice_id: str, items_to_refund: 
         response.raise_for_status()
 
         response_data = response.json()
+
+
+        print("--- FNE API Response (Avoir) ---")
+        print(f"Response Body: {response_data}")
+        print("------------------------------------------")
 
         # Une réponse de succès contient les clés 'reference' et 'token' au premier niveau
         if "reference" in response_data and "token" in response_data:
