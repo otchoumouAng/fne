@@ -67,6 +67,7 @@ class FactureAvoirModel:
             SELECT
                 fa.*,
                 f.code_facture as code_facture_origine,
+                f.fne_nim as fne_nim_origine,
                 c.name as client_name,
                 c.address as client_address,
                 c.phone as client_contact

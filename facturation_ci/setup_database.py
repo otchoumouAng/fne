@@ -45,7 +45,12 @@ def create_tables(cursor):
         "    `email` VARCHAR(100),"
         "    `ncc` VARCHAR(100) COMMENT 'N° de contribuable',"
         "    `point_of_sale` VARCHAR(255) NULL,"
-        "    `fne_api_key` VARCHAR(255) COMMENT 'Clé d''API pour FNE'"
+        "    `fne_api_key` VARCHAR(255) COMMENT 'Clé d''API pour FNE',"
+        "    `tax_regime` VARCHAR(100) COMMENT 'Régime d''imposition',"
+        "    `tax_office` VARCHAR(255) COMMENT 'Centre des impôts',"
+        "    `rccm` VARCHAR(255) COMMENT 'N° RCCM',"
+        "    `bank_details` VARCHAR(255) COMMENT 'Références bancaires',"
+        "    `establishment` VARCHAR(255) COMMENT 'Établissement'"
         ") ENGINE=InnoDB")
 
     TABLES['clients'] = (
@@ -56,7 +61,8 @@ def create_tables(cursor):
         "  `email` VARCHAR(100),"
         "  `phone` VARCHAR(50),"
         "  `ncc` VARCHAR(100) NULL COMMENT 'N° de contribuable',"
-        "  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
+        "  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,"
+        "  `tax_regime` VARCHAR(100) NULL COMMENT 'Régime d''imposition'"
         ") ENGINE=InnoDB")
 
     TABLES['products'] = (

@@ -29,6 +29,15 @@ class SettingsModule(QWidget):
             self.ui.tax_id_edit.setText(company_info.get('ncc', ''))
             self.ui.pos_edit.setText(company_info.get('point_of_sale', ''))
             self.ui.fne_api_key_edit.setText(company_info.get('fne_api_key', ''))
+            
+            # --- DÉBUT DES AJOUTS ---
+            self.ui.tax_regime_edit.setText(company_info.get('tax_regime', ''))
+            self.ui.tax_office_edit.setText(company_info.get('tax_office', ''))
+            self.ui.rccm_edit.setText(company_info.get('rccm', ''))
+            self.ui.bank_details_edit.setText(company_info.get('bank_details', ''))
+            self.ui.establishment_edit.setText(company_info.get('establishment', ''))
+            # --- FIN DES AJOUTS ---
+            
         else:
             print("Aucune information d'entreprise trouvée dans la base de données.")
 
@@ -41,7 +50,15 @@ class SettingsModule(QWidget):
             'email': self.ui.email_edit.text(),
             'ncc': self.ui.tax_id_edit.text(),
             'point_of_sale': self.ui.pos_edit.text(),
-            'fne_api_key': self.ui.fne_api_key_edit.text()
+            'fne_api_key': self.ui.fne_api_key_edit.text(),
+            
+            # --- DÉBUT DES AJOUTS ---
+            'tax_regime': self.ui.tax_regime_edit.text(),
+            'tax_office': self.ui.tax_office_edit.text(),
+            'rccm': self.ui.rccm_edit.text(),
+            'bank_details': self.ui.bank_details_edit.text(),
+            'establishment': self.ui.establishment_edit.text()
+            # --- FIN DES AJOUTS ---
         }
         return company_data
 
@@ -49,7 +66,7 @@ class SettingsModule(QWidget):
         """Récupère les données du formulaire et les sauvegarde dans la base de données."""
         data = self.get_form_data()
 
-        # Validation simple
+        # Validation simple (inchangée, sauf si les nouveaux champs sont requis)
         if not data['name'] or not data['fne_api_key']:
             QMessageBox.warning(self, "Champs requis", "Le nom de l'entreprise et la clé d'API FNE sont requis.")
             return

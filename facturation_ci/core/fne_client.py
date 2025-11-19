@@ -47,7 +47,7 @@ def certify_document(invoice_full_data: dict, company_info: dict, client_info: d
             "clientNcc": company_info.get("ncc"),
             "clientCompanyName": company_info.get("name"),
             "pointOfSale": company_info.get("point_of_sale"),
-            "establishment": company_info.get("name"),
+            "establishment": company_info.get("establishment"),
             "clientPhone": company_info.get("phone"),
             "clientEmail": company_info.get("email"),
             "items": [
@@ -62,15 +62,15 @@ def certify_document(invoice_full_data: dict, company_info: dict, client_info: d
         }
     else:  # 'sale'
         # Payload pour une facture de vente
-        # Les informations "client" sont celles du client, mais le NCC est celui de notre entreprise.
+        # Les informations "client" sont celles du client.
         payload = {
             "invoiceType": "sale",
             "paymentMethod": "cash",
             "template": "B2B",
-            "clientNcc": company_info.get("ncc"),             # NCC de l'entreprise qui émet
+            "clientNcc": '',             
             "clientCompanyName": client_info.get("name"),   # Nom du client
             "pointOfSale": company_info.get("point_of_sale"), # Point de vente de l'entreprise
-            "establishment": company_info.get("name"),        # Nom de l'établissement (l'entreprise)
+            "establishment": company_info.get("establishment"),
             "clientPhone": client_info.get("phone"),          # Téléphone du client
             "clientEmail": client_info.get("email"),          # Email du client
             "items": [
@@ -151,6 +151,9 @@ def refund_invoice(api_key: str, original_fne_invoice_id: str, items_to_refund: 
     :return: Dictionnaire avec les données de l'avoir certifié.
     :raises FNEClientError: En cas d'échec.
     """
+    # (Le reste de cette fonction 'refund_invoice' est inchangé car
+    # elle ne dépend pas de company_info ou client_info)
+    
     endpoint = f"{FNE_API_BASE_URL}/invoices/{original_fne_invoice_id}/refund"
 
     headers = {
