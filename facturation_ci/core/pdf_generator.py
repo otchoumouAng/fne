@@ -189,7 +189,7 @@ class PDFGenerator:
 
 
         # Ajouter le logo de l'entreprise
-        logo_path = self.images_dir / 'logo_sogici.png'
+        logo_path = self.images_dir / 'entreprise_logo.png'
         context['logo_uri'] = self._file_to_base64_uri(logo_path)
 
         # Générer le QR code si les données FNE sont présentes

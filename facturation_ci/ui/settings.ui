@@ -94,7 +94,58 @@
         </property>
        </widget>
       </item>
-     </layout>
+
+      <item row="7" column="0">
+       <widget class="QLabel" name="label_tax_regime">
+        <property name="text">
+         <string>Régime d'imposition :</string>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="1">
+       <widget class="QLineEdit" name="tax_regime_edit"/>
+      </item>
+      <item row="8" column="0">
+       <widget class="QLabel" name="label_tax_office">
+        <property name="text">
+         <string>Centre des impôts :</string>
+        </property>
+       </widget>
+      </item>
+      <item row="8" column="1">
+       <widget class="QLineEdit" name="tax_office_edit"/>
+      </item>
+      <item row="9" column="0">
+       <widget class="QLabel" name="label_rccm">
+        <property name="text">
+         <string>N° RCCM :</string>
+        </property>
+       </widget>
+      </item>
+      <item row="9" column="1">
+       <widget class="QLineEdit" name="rccm_edit"/>
+      </item>
+      <item row="10" column="0">
+       <widget class="QLabel" name="label_bank_details">
+        <property name="text">
+         <string>Références bancaires :</string>
+        </property>
+       </widget>
+      </item>
+      <item row="10" column="1">
+       <widget class="QLineEdit" name="bank_details_edit"/>
+      </item>
+      <item row="11" column="0">
+       <widget class="QLabel" name="label_establishment">
+        <property name="text">
+         <string>Établissement :</string>
+        </property>
+       </widget>
+      </item>
+      <item row="11" column="1">
+       <widget class="QLineEdit" name="establishment_edit"/>
+      </item>
+      </layout>
     </widget>
    </item>
    <item>
