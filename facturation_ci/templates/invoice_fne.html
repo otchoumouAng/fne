@@ -273,7 +273,7 @@
                     <p>Mail : {{ company.email }}</p>
                     <p>Nom du vendeur : </p> <!-- {{ invoice.name | default('') }} 'user' doit être passé au contexte -->
                     <p>Nom du PDV : {{ company.point_of_sale }}</p>
-                    <p>Date et heure : {{ invoice.date_creation.strftime('%d/%m/%Y %H:%M:%S') }}</p>
+                    <p>Date et heure : {{ invoice.date_facturation.strftime('%d/%m/%Y %H:%M:%S') if invoice.date_facturation else invoice.date_creation.strftime('%d/%m/%Y %H:%M:%S') }}</p>
                     <p>Mode de paiement : {{ invoice.payment_method | default('Cash') }}</p>
                 </div>
             </div>
