@@ -3,7 +3,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Facture #{{ invoice.number }}</title>
+    <!-- MODIFIÉ: Titre pour l'avoir -->
+    <title>Facture d'Avoir #{{ invoice.code_avoir }}</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -18,16 +19,17 @@
             --gray-700: #374151;
             --gray-800: #1F2937;
         }
-        
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        
+
+        /* MODIFIÉ: Padding body comme sur la facture */
         body {
             font-family: 'Inter', sans-serif;
             font-weight: 400;
             line-height: 1.6;
             color: var(--gray-700);
             background-color: var(--white);
-            padding: 20px 40px 40px; /* MODIFIÉ: Réduction du padding-top de 40px à 20px */
+            padding: 20px 40px 40px;
             max-width: 1100px;
             margin: 0 auto;
         }
@@ -35,10 +37,8 @@
         .invoice-container {
             background: var(--white);
         }
-        
-        /* --- STYLES F1 (MODIFIÉS POUR LA GRILLE) --- */
 
-        /* NOUVEAU: Conteneur pour le logo en haut */
+        /* --- NOUVEAUX STYLES F1 (Copiés de invoice.html) --- */
         .f1-logo-header {
             padding-bottom: 15px;
             margin-bottom: 20px;
@@ -47,25 +47,19 @@
         .f1-logo-header .f1-logo {
             width: 140px;
         }
-
-        /* NOUVEAU: Conteneur principal de la grille (2 colonnes) */
         .f1-invoice-header {
             display: flex;
             justify-content: space-between;
             width: 100%;
-            gap: 20px; /* Espace entre les colonnes gauche et droite */
-            margin-bottom: 30px; /* Espace avant le tableau */
+            gap: 20px;
+            margin-bottom: 30px;
         }
-
-        /* NOUVEAU: Colonnes de la grille */
         .f1-grid-col-left, .f1-grid-col-right {
             display: flex;
             flex-direction: column;
             width: 50%;
-            gap: 15px; /* Espace vertical entre les blocs dans une colonne */
+            gap: 15px;
         }
-
-        /* Styles de base pour les blocs */
         .f1-framed-info, .f1-invoice-qr-block, .f1-company-details-framed, .f1-client-details {
             border: 1px solid var(--gray-300);
             padding: 12px;
@@ -74,34 +68,34 @@
             font-size: 13px;
             line-height: 1.5;
         }
-
         .f1-framed-info p, .f1-company-details-framed p, .f1-client-details p {
             margin: 2px 0;
         }
         .f1-framed-info p strong, .f1-company-details-framed p strong, .f1-client-details p strong {
             color: var(--gray-800);
         }
-
         .f1-invoice-number {
             font-size: 13px;
             font-weight: 600;
             color: var(--primary-dark);
         }
-        
+        /* AJOUTÉ: Style pour la facture d'origine */
+        .f1-invoice-origin {
+            font-size: 13px;
+            color: var(--gray-600);
+            margin-top: 4px;
+        }
         .f1-qr-stamp-container {
             display: flex;
             align-items: center;
             gap: 15px;
             margin-top: 10px;
         }
-
         .client-name {
             font-weight: 600;
             color: var(--gray-800);
             font-size: 14px;
         }
-
-        /* --- STYLES F1 INCHANGÉS --- */
         .f1-tax-summary {
             margin-top: 30px;
         }
@@ -133,15 +127,21 @@
         }
         /* --- FIN DES STYLES F1 --- */
 
-
-        /* --- TABLEAU --- */
+        /* --- STYLES DU TABLEAU (conservés) --- */
+        h3 {
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--gray-600);
+            margin-bottom: 8px;
+        }
         .items-table {
             width: 100%;
             border-collapse: collapse;
             margin: 20px 0 30px;
             font-size: 13px;
         }
-        
         .items-table th {
             background-color: var(--gray-100);
             padding: 10px 12px;
@@ -152,33 +152,28 @@
             font-size: 12px;
             border-bottom: 2px solid var(--gray-300);
         }
-
         .items-table td {
             padding: 10px 12px;
             border-bottom: 1px solid var(--gray-200);
             vertical-align: top;
         }
-        
         .items-table tr:hover td {
             background-color: #FAFAFA;
         }
-
         .item-reference {
             font-size: 11px;
             color: var(--gray-500);
             margin-top: 3px;
         }
-        
         .text-center { text-align: center; }
         .text-right { text-align: right; }
-        
+
         /* --- TOTALS --- */
         .totals-container {
             display: flex;
             justify-content: flex-end;
             margin-top: 15px;
         }
-        
         .totals {
             width: 300px;
             padding: 16px;
@@ -186,20 +181,17 @@
             background-color: var(--white);
             border: 1px solid var(--gray-200);
         }
-        
         .total-row {
             display: flex;
             justify-content: space-between;
             padding: 6px 0;
             font-size: 13px;
         }
-        
         .subtotal {
             border-bottom: 1px dashed var(--gray-300);
             margin-bottom: 6px;
             padding-bottom: 6px;
         }
-        
         .grand-total {
             border-top: 1px solid var(--gray-300);
             margin-top: 10px;
@@ -208,7 +200,7 @@
             font-weight: 600;
             color: var(--primary-dark);
         }
-        
+
         /* --- NOTES --- */
         .notes {
             margin-top: 30px;
@@ -219,21 +211,11 @@
             line-height: 1.5;
             text-align: center;
         }
-        
-        /* --- FOOTER --- */
-        .footer {
-            margin-top: 40px;
-            text-align: center;
-            font-size: 12px;
-            color: var(--gray-500);
-            padding-top: 15px;
-            border-top: 1px solid var(--gray-200);
-        }
-        
+
         /* --- Responsive --- */
         @media (max-width: 768px) {
             body { padding: 20px; }
-            .f1-invoice-header { flex-direction: column; } /* Passe en colonne sur mobile */
+            .f1-invoice-header { flex-direction: column; }
             .f1-grid-col-left, .f1-grid-col-right { width: 100%; }
             .items-table { display: block; overflow-x: auto; }
             .totals { width: 100%; }
@@ -243,18 +225,17 @@
 <body>
     <div class="invoice-container">
 
-        <!-- Ligne 1: Logo -->
+        <!-- Ligne 1: Logo (copié) -->
         <div class="f1-logo-header">
-            <!-- logo_uri est une variable globale définie dans pdf_generator.py -->
             <img src="{{ logo_uri }}" alt="Logo Entreprise" class="f1-logo">
         </div>
 
-        <!-- Lignes 2 & 3: Grille 2x2 -->
+        <!-- Lignes 2 & 3: Grille 2x2 (copiée) -->
         <header class="f1-invoice-header">
-            
+
             <!-- Colonne de GAUCHE -->
             <div class="f1-grid-col-left">
-                
+
                 <!-- Bloc L2-G: Infos Entreprise (company) -->
                 <div class="f1-framed-info">
                     <p><strong>{{ company.name }}</strong></p>
@@ -271,21 +252,35 @@
                     <p>Adresse : {{ company.address }}</p>
                     <p>N° Tel : {{ company.phone }}</p>
                     <p>Mail : {{ company.email }}</p>
-                    <p>Nom du vendeur : </p> <!-- {{ invoice.name | default('') }} 'user' doit être passé au contexte -->
+                    <p>Nom du vendeur : </p> <!-- 'user' doit être passé au contexte -->
                     <p>Nom du PDV : {{ company.point_of_sale }}</p>
-                    <p>Date et heure : {{ invoice.bl_date_creation.strftime('%d/%m/%Y %H:%M:%S') }}</p>
-                    <p>Mode de paiement : {{ invoice.payment_method | default('Cash') }}</p> 
+
+                    <p>Date et heure : {{ invoice.date_creation.strftime('%d/%m/%Y %H:%M:%S') }}</p>
+                    <p>Mode de paiement : {{ invoice.payment_method }}</p>
                 </div>
             </div>
 
             <!-- Colonne de DROITE -->
             <div class="f1-grid-col-right">
-                
-                <!-- Bloc L2-D: Invoice N. & FNE section -->
+
+                <!-- Bloc L2-D: MODIFIÉ pour l'avoir -->
                 <div class="f1-invoice-qr-block">
                     <div class="f1-invoice-number">
-                        Facture de vente N° {{ invoice.code_facture }}
+                        Avoir N° {{ invoice.fne_nim if invoice.fne_nim else invoice.code_avoir }}
                     </div>
+                    <div class="f1-invoice-origin">
+                        Date: {{ invoice.date_creation.strftime('%d/%m/%Y') }}
+                    </div>
+                    <div class="f1-invoice-origin">
+                        Facture d'origine: {{ invoice.fne_nim_origine if invoice.fne_nim_origine else invoice.code_facture_origine }}
+                    </div>
+
+                    {% if qr_code_uri %}
+                    <div class="f1-qr-stamp-container">
+                        <img src="{{ qr_code_uri }}" alt="QR Code de certification" style="width:100px; height:100px; border: 1px solid var(--gray-200); border-radius: 4px;">
+                        <img src="{{ fne_logo_uri }}" alt="Facture Normalisée Électronique" style="width: 80px; height: 80px;">
+                    </div>
+                    {% endif %}
                 </div>
 
                 <!-- Bloc L3-D: Client info section (client) -->
@@ -297,13 +292,14 @@
                     <p><strong>Téléphone :</strong> <div>{{ client.phone }}</div></p>
                     <p><strong>NCC :</strong> {{ client.ncc }}</p>
                     <!-- NOUVEAU CHAMP CLIENT -->
-                    <p><strong>Régime d'imposition :</strong> {{ client.tax_regime }}</p>
+                    <p><strong>Régime d'imposition :</strong> {{ client.tax_regime | default('') }}</p>
                 </section>
             </div>
         </header>
 
-        
-        <h3>Détails de la facture</h3>
+
+        <!-- MODIFIÉ: Titre pour l'avoir -->
+        <h3>Détails de l'avoir</h3>
         <table class="items-table">
             <thead>
                 <tr>
@@ -319,9 +315,9 @@
                 {% for item in details %}
                 <tr>
                     <td class="text-center">{{ loop.index }}</td>
+                    <!-- MODIFIÉ: Pas de réf. item pour l'avoir -->
                     <td>
                         <div>{{ item.description }}</div>
-                        <div class="item-reference">Réf: {{ item.reference }}</div>
                     </td>
                     <td class="text-center">{{ item.quantity }}</td>
                     <td class="text-right">{{ money(item.unit_price, invoice.get("currency", "XOF")) }}</td>
@@ -331,7 +327,7 @@
                 {% endfor %}
             </tbody>
         </table>
-        
+
         <div class="totals-container">
             <div class="totals">
                 <div class="total-row subtotal">
@@ -350,40 +346,41 @@
                 </div>
             </div>
         </div>
-        
-        <!-- SECTION RESUME DE LA FACTURE (F1) -->
+
+        <!-- AJOUTÉ: Section Résumé (copiée) -->
         <section class="f1-tax-summary">
             <h3>RESUME DE LA FACTURE</h3>
             <table>
                 <thead>
                     <tr>
                         <th>CATEGORIE</th>
-                        <th>SOUS-TOTAL</th>
                         <th>TAUX</th>
                         <th>TOTAL TAXES</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- TODO: Cette partie doit aussi être dynamisée -->
+                    {% for rate, val in taxes.items() %}
                     <tr>
-                        <td>TVA normal : TVA sur HT 18,00% : A</td>
-                        <td>{{ money(subtotal, "") }}</td> <!-- Exemple: A dynamiser si plusieurs taux -->
-                        <td>18%</td>
-                        <td>{{ money(total_tax, "") }}</td>
+                        <td>TVA {{ rate }}%</td>
+                        <td>{{ rate }}%</td>
+                        <td>{{ money(val, "") }}</td>
                     </tr>
+                    {% endfor %}
+                    {% if not taxes %}
+                    <tr>
+                        <td colspan="3">Aucune taxe applicable</td>
+                    </tr>
+                    {% endif %}
                 </tbody>
             </table>
         </section>
 
-        
+
         <div class="notes">
-            <!-- <div><strong>Notes :</strong></div>
-            {{ invoice.notes }}
-            <br> -->
             <em>Total en lettres : {{ grand_total_words }}</em>
         </div>
 
-        
+
     </div>
 </body>
 </html>

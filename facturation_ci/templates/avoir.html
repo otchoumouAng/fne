@@ -266,21 +266,14 @@
                 <!-- Bloc L2-D: MODIFIÉ pour l'avoir -->
                 <div class="f1-invoice-qr-block">
                     <div class="f1-invoice-number">
-                        Avoir N° {{ invoice.fne_nim if invoice.fne_nim else invoice.code_avoir }}
+                        Avoir N° {{ invoice.code_avoir }}
                     </div>
                     <div class="f1-invoice-origin">
                         Date: {{ invoice.date_creation.strftime('%d/%m/%Y') }}
                     </div>
                     <div class="f1-invoice-origin">
-                        Facture d'origine: {{ invoice.fne_nim_origine if invoice.fne_nim_origine else invoice.code_facture_origine }}
+                        Facture d'origine: {{ invoice.code_facture_origine }}
                     </div>
-                    
-                    {% if qr_code_uri %}
-                    <div class="f1-qr-stamp-container">
-                        <img src="{{ qr_code_uri }}" alt="QR Code de certification" style="width:100px; height:100px; border: 1px solid var(--gray-200); border-radius: 4px;">
-                        <img src="{{ fne_logo_uri }}" alt="Facture Normalisée Électronique" style="width: 80px; height: 80px;">
-                    </div>
-                    {% endif %}
                 </div>
 
                 <!-- Bloc L3-D: Client info section (client) -->

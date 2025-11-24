@@ -192,16 +192,22 @@ class PDFGenerator:
         logo_path = self.images_dir / 'entreprise_logo.png'
         context['logo_uri'] = self._file_to_base64_uri(logo_path)
 
-        # Générer le QR code si les données FNE sont présentes
+        # Générer le QR code si les données FNE sont présentes et que c'est un template FNE
         fne_qr_code_data = None
-        if self.template.name == 'invoice.html':
-            invoice_details = context.get('invoice', {})
-            fne_qr_code_data = invoice_details.get('fne_qr_code')
-        elif self.template.name == 'avoir.html':
-            avoir_details = context.get('invoice', {})
-            fne_qr_code_data = avoir_details.get('fne_qr_code')
+        # On vérifie si le template est un template certifié ou si les données sont présentes pour les templates standards (rétrocompatibilité si besoin, mais ici on sépare)
+        # La logique demandée est d'utiliser les fichiers _fne.html.
 
-        if fne_qr_code_data:
+        # Récupération des données FNE indépendamment du nom du template, si disponible dans le contexte 'invoice'
+        invoice_details = context.get('invoice', {})
+        fne_qr_code_data = invoice_details.get('fne_qr_code')
+
+        # On ne génère le QR code que si on est sur un template FNE ou si on veut forcer l'affichage
+        # Pour les templates standards (invoice.html, avoir.html, bl.html), on a supprimé les blocs d'affichage du code,
+        # donc générer l'URI ne nuit pas, mais c'est mieux de cibler.
+
+        is_fne_template = 'fne' in self.template.name
+
+        if fne_qr_code_data and is_fne_template:
             context['qr_code_uri'] = self.generate_qr_code(fne_qr_code_data)
 
             # Ajouter le logo FNE
