@@ -209,8 +209,10 @@ class CreditNoteListDialog(QDialog):
         client_info = {
             "name": avoir_data.get('client_name', 'N/A'),
             "address": avoir_data.get('client_address', 'N/A'),
-            "contact": avoir_data.get('client_contact', 'N/A')
+            "phone": avoir_data.get('client_contact', 'N/A'),
+            "email": avoir_data.get('client_email', 'N/A')
         }
+        
 
         # Déterminer le template à utiliser (Standard ou FNE)
         is_fne = avoir_data.get('statut_fne') == 'success'
