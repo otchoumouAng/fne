@@ -295,6 +295,9 @@
                         <!-- Visuel FNE -->
                         <img src="{{ fne_logo_uri }}" alt="Facture Normalisée Électronique" style="width: 80px; height: 80px;">
                     </div>
+                    {% if invoice.date_et_heure_de_certification %}
+                    <p style="font-size: 10px; margin-top: 5px;">Certifié le: {{ invoice.date_et_heure_de_certification.strftime('%d/%m/%Y %H:%M:%S') }}</p>
+                    {% endif %}
                     {% endif %}
                 </div>
 

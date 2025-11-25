@@ -104,6 +104,7 @@ def certify_document(invoice_full_data: dict, company_info: dict, client_info: d
 
             fne_invoice_data = response_data.get("invoice", {})
             fne_invoice_id = fne_invoice_data.get("id")
+            fne_created_at = fne_invoice_data.get("createdAt")
             fne_items = fne_invoice_data.get("items", [])
 
             local_item_ids = [item['id'] for item in invoice_full_data.get('items', [])]
@@ -118,6 +119,7 @@ def certify_document(invoice_full_data: dict, company_info: dict, client_info: d
                 "nim": nim,
                 "qr_code": qr_code,
                 "fne_invoice_id": fne_invoice_id,
+                "fne_created_at": fne_created_at,
                 "items_id_map": items_id_map
             }
 
@@ -181,9 +183,12 @@ def refund_invoice(api_key: str, original_fne_invoice_id: str, items_to_refund: 
 
         # Une réponse de succès contient les clés 'reference' et 'token' au premier niveau
         if "reference" in response_data and "token" in response_data:
+            fne_invoice_data = response_data.get("invoice", {})
+            fne_created_at = response_data.get("invoice", {}).get("createdAt")
             return {
                 "nim": response_data.get("reference"),
-                "qr_code": response_data.get("token")
+                "qr_code": response_data.get("token"),
+                "fne_created_at": fne_created_at
             }
 
         # Gestion d'une réponse de succès qui n'a pas la structure attendue

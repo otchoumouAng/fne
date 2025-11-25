@@ -92,7 +92,7 @@ class FactureModel:
         finally:
             cursor.close()
 
-    def save_certification_results(self, facture_id, nim, qr_code, fne_invoice_id, items_id_map):
+    def save_certification_results(self, facture_id, nim, qr_code, fne_invoice_id, fne_created_at, items_id_map):
         """
         Sauvegarde tous les résultats d'une certification FNE réussie dans une transaction atomique.
         """
@@ -105,10 +105,10 @@ class FactureModel:
             # 1. Mettre à jour la facture avec toutes les données FNE
             update_facture_query = """
                 UPDATE factures
-                SET statut_fne = 'success', fne_nim = %s, fne_qr_code = %s, fne_invoice_id = %s, fne_error_message = NULL
+                SET statut_fne = 'success', fne_nim = %s, fne_qr_code = %s, fne_invoice_id = %s, date_et_heure_de_certification = %s, fne_error_message = NULL
                 WHERE id = %s
             """
-            cursor.execute(update_facture_query, (nim, qr_code, fne_invoice_id, facture_id))
+            cursor.execute(update_facture_query, (nim, qr_code, fne_invoice_id, fne_created_at, facture_id))
 
             # 2. Mettre à jour chaque ligne de commande avec son ID FNE
             if items_id_map:

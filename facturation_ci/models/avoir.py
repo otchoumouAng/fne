@@ -31,7 +31,7 @@ class FactureAvoirModel:
         finally:
             cursor.close()
 
-    def update_fne_status(self, avoir_id, statut_fne, nim=None, qr_code=None, error_message=None):
+    def update_fne_status(self, avoir_id, statut_fne, nim=None, qr_code=None, error_message=None, fne_created_at=None):
         """Met à jour le statut et les données FNE d'un avoir."""
         connection = self.db_manager.get_connection()
         if not connection:
@@ -40,10 +40,10 @@ class FactureAvoirModel:
         cursor = connection.cursor()
         query = """
             UPDATE factures_avoir
-            SET statut_fne = %s, fne_nim = %s, fne_qr_code = %s, fne_error_message = %s
+            SET statut_fne = %s, fne_nim = %s, fne_qr_code = %s, fne_error_message = %s, date_et_heure_de_certification = %s
             WHERE id = %s
         """
-        values = (statut_fne, nim, qr_code, error_message, avoir_id)
+        values = (statut_fne, nim, qr_code, error_message, fne_created_at, avoir_id)
         try:
             cursor.execute(query, values)
             connection.commit()
