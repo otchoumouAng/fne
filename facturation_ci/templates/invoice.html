@@ -293,7 +293,7 @@
                     <p><strong>Client:</strong></p>
                     <p><strong>Nom :</strong> <span class="client-name">{{ client.name }}</span></p>
                     <p><strong>Adresse :</strong> <div>{{ client.address }}</div></p>
-                    <p><strong>Email :</strong> <div>{{ client.email }}</div></p>
+                    <p><strong>Email :</strong> <div>{{ client.client_email }}</div></p>
                     <p><strong>Téléphone :</strong> <div>{{ client.phone }}</div></p>
                     <p><strong>NCC :</strong> {{ client.ncc }}</p>
                     <!-- NOUVEAU CHAMP CLIENT -->
@@ -307,7 +307,7 @@
         <table class="items-table">
             <thead>
                 <tr>
-                    <th>#</th>
+                    <th>Ref</th>
                     <th>Description</th>
                     <th class="text-center">Qté</th>
                     <th class="text-right">PU</th>
@@ -318,10 +318,10 @@
             <tbody>
                 {% for item in details %}
                 <tr>
-                    <td class="text-center">{{ loop.index }}</td>
+                    <td class="text-center">{{ item.id }}</td>
                     <td>
                         <div>{{ item.description }}</div>
-                        <div class="item-reference">Réf: {{ item.reference }}</div>
+                        <!-- <div class="item-reference">Réf: {{ item.reference }}</div> -->
                     </td>
                     <td class="text-center">{{ item.quantity }}</td>
                     <td class="text-right">{{ money(item.unit_price, invoice.get("currency", "XOF")) }}</td>
