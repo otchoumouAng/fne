@@ -280,6 +280,9 @@
                         <img src="{{ qr_code_uri }}" alt="QR Code de certification" style="width:100px; height:100px; border: 1px solid var(--gray-200); border-radius: 4px;">
                         <img src="{{ fne_logo_uri }}" alt="Facture Normalisée Électronique" style="width: 80px; height: 80px;">
                     </div>
+                    {% if invoice.date_et_heure_de_certification %}
+                    <p style="font-size: 10px; margin-top: 5px;">Certifié le: {{ invoice.date_et_heure_de_certification.strftime('%d/%m/%Y %H:%M:%S') }}</p>
+                    {% endif %}
                     {% endif %}
                 </div>
 

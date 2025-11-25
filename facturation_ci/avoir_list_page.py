@@ -128,9 +128,10 @@ class AvoirListPage(QWidget):
         self.is_task_running = False
         nim = fne_data.get('nim')
         qr_code = fne_data.get('qr_code')
+        fne_created_at = fne_data.get('fne_created_at')
         QMessageBox.information(self, "Succès", f"Avoir certifié avec succès.\nNIM: {nim}")
 
-        self.avoir_model.update_fne_status(avoir_id, 'success', nim=nim, qr_code=qr_code)
+        self.avoir_model.update_fne_status(avoir_id, 'success', nim=nim, qr_code=qr_code, fne_created_at=fne_created_at)
         self.load_data()
         self.on_selection_changed(None, None)
 

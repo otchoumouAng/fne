@@ -117,6 +117,7 @@ def create_tables(cursor):
         "  `fne_invoice_id` VARCHAR(255) NULL COMMENT 'ID unique de la facture retourné par FNE',"
         "  `fne_qr_code` TEXT NULL,"
         "  `fne_error_message` TEXT NULL,"
+        "  `date_et_heure_de_certification` DATETIME NULL,"
         "  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,"
         "  FOREIGN KEY (`commande_id`) REFERENCES `commandes`(`id`)"
         ") ENGINE=InnoDB")
@@ -149,6 +150,7 @@ def create_tables(cursor):
         "  `fne_nim` VARCHAR(255) NULL,"
         "  `fne_qr_code` TEXT NULL,"
         "  `fne_error_message` TEXT NULL,"
+        "  `date_et_heure_de_certification` DATETIME NULL,"
         "  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,"
         "  FOREIGN KEY (`facture_origine_id`) REFERENCES `factures`(`id`)"
         ") ENGINE=InnoDB")

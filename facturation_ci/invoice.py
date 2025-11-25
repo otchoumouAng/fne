@@ -202,6 +202,7 @@ class InvoiceModule(QWidget):
         nim = result_data.get('nim')
         qr_code = result_data.get('qr_code')
         fne_invoice_id = result_data.get('fne_invoice_id')
+        fne_created_at = result_data.get('fne_created_at')
         items_id_map = result_data.get('items_id_map', [])
 
         QMessageBox.information(self, "Succès", f"Facture certifiée avec succès.\nNIM: {nim}")
@@ -212,6 +213,7 @@ class InvoiceModule(QWidget):
             nim=nim,
             qr_code=qr_code,
             fne_invoice_id=fne_invoice_id,
+            fne_created_at=fne_created_at,
             items_id_map=items_id_map
         )
 
