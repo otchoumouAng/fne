@@ -70,7 +70,7 @@ class FactureAvoirModel:
                 f.fne_nim as fne_nim_origine,
                 c.name as client_name,
                 c.address as client_address,
-                c.phone as client_contact
+                c.phone as client_contact,
                 c.email as client_email
             FROM factures_avoir fa
             JOIN factures f ON fa.facture_origine_id = f.id
@@ -116,13 +116,13 @@ class FactureAvoirModel:
                 VALUES (%s, %s, %s, %s, %s, %s, %s)
             """
 
-            today = datetime.now().date()
+            now = datetime.now()
             items_json = json.dumps(avoir_items) # Convertir la liste d'items en chaîne JSON
 
             values = (
                 code_avoir,
                 original_facture_id,
-                today,
+                now,
                 items_json,
                 totals['total_ht'],
                 totals['total_tva'],
