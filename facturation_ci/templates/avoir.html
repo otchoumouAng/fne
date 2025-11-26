@@ -266,21 +266,14 @@
                 <!-- Bloc L2-D: MODIFIÉ pour l'avoir -->
                 <div class="f1-invoice-qr-block">
                     <div class="f1-invoice-number">
-                        Avoir N° {{ invoice.fne_nim if invoice.fne_nim else invoice.code_avoir }}
+                        Avoir N° {{ invoice.code_avoir }}
                     </div>
                     <div class="f1-invoice-origin">
                         Date: {{ invoice.date_creation.strftime('%d/%m/%Y') }}
                     </div>
                     <div class="f1-invoice-origin">
-                        Facture d'origine: {{ invoice.fne_nim_origine if invoice.fne_nim_origine else invoice.code_facture_origine }}
+                        Facture d'origine: {{ invoice.code_facture_origine }}
                     </div>
-                    
-                    {% if qr_code_uri %}
-                    <div class="f1-qr-stamp-container">
-                        <img src="{{ qr_code_uri }}" alt="QR Code de certification" style="width:100px; height:100px; border: 1px solid var(--gray-200); border-radius: 4px;">
-                        <img src="{{ fne_logo_uri }}" alt="Facture Normalisée Électronique" style="width: 80px; height: 80px;">
-                    </div>
-                    {% endif %}
                 </div>
 
                 <!-- Bloc L3-D: Client info section (client) -->
@@ -288,7 +281,7 @@
                     <p><strong>Client:</strong></p>
                     <p><strong>Nom :</strong> <span class="client-name">{{ client.name }}</span></p>
                     <p><strong>Adresse :</strong> <div>{{ client.address }}</div></p>
-                    <p><strong>Email :</strong> <div>{{ client.email }}</div></p>
+                    <p><strong>Email :</strong> <div>{{ client.client_email }}</div></p>
                     <p><strong>Téléphone :</strong> <div>{{ client.phone }}</div></p>
                     <p><strong>NCC :</strong> {{ client.ncc }}</p>
                     <!-- NOUVEAU CHAMP CLIENT -->
@@ -303,7 +296,7 @@
         <table class="items-table">
             <thead>
                 <tr>
-                    <th>#</th>
+                    <th>Ref</th>
                     <th>Description</th>
                     <th class="text-center">Qté</th>
                     <th class="text-right">PU</th>
@@ -314,8 +307,7 @@
             <tbody>
                 {% for item in details %}
                 <tr>
-                    <td class="text-center">{{ loop.index }}</td>
-                    <!-- MODIFIÉ: Pas de réf. item pour l'avoir -->
+                    <td class="text-center">{{ item.id }}</td>
                     <td>
                         <div>{{ item.description }}</div>
                     </td>

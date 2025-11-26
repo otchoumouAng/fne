@@ -41,7 +41,7 @@
         .doc_name > img{
             width: 140px;
         }
-        
+
         h1 {
             font-size: 24px;
             font-weight: 600;
@@ -221,6 +221,14 @@
                 <div class="invoice-number">#{{ invoice.code_bl }}</div>
                 <div class="invoice-date">Date: {{ invoice.bl_date_creation.strftime('%d-%m-%Y') }}</div>
                 <div class="invoice-date">Facture: {{ invoice.code_facture }}</div>
+
+                {% if qr_code_uri %}
+                <div class="fne-panel">
+                    <h3>BL Nº {{ invoice.fne_nim }}</h3>
+                    <img src="{{ fne_logo_uri }}" alt="Logo FNE" class="fne-logo">
+                    <img src="{{ qr_code_uri }}" alt="QR Code FNE" class="fne-qr-code">
+                </div>
+                {% endif %}
             </div>
         </div>
 

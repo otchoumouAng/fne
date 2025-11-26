@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Avoir FNE V4</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        /* --- CONFIGURATION --- */
+        :root {
+            --border-color: #000;
+            --font-main: 'Inter', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-print-color-adjust: exact;
+        }
+
+        body {
+            font-family: var(--font-main);
+            font-size: 13px; /* Taille augmentée comme demandé */
+            color: #000;
+            background-color: #555;
+            padding: 20px;
+            line-height: 1.3; /* Interligne standard pour bloc compact */
+        }
+
+        .page {
+            background-color: white;
+            width: 210mm;
+            min-height: 297mm;
+            margin: 0 auto;
+            padding: 15mm;
+            position: relative;
+        }
+
+        /* --- LAYOUT --- */
+        .row { display: flex; gap: 30px; }
+        .col-left { width: 55%; }
+        .col-right { width: 45%; }
+
+        /* --- STYLES SANS SEPARATEURS --- */
+        /* Les classes ci-dessous n'ont plus de margin-bottom */
+        
+        .company-box {
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 20px;
+        }
+
+        .company-name {
+            font-size: 15px; /* Nom un peu plus grand */
+            font-weight: 400; 
+            text-transform: uppercase;
+            margin-bottom: 5px; /* Seule marge conservée pour séparer le titre */
+            line-height: 1.2;
+        }
+
+        /* Bloc d'info compact (Vendeur / Client) */
+        .info-block div, .info-block p {
+            margin: 0; /* Pas de séparateur entre les lignes */
+            padding: 0;
+        }
+
+        .invoice-number {
+            text-align: right;
+            font-size: 13px;
+            margin-bottom: 15px;
+        }
+
+        /* --- QR & LOGO --- */
+        .qr-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            padding-right: 10px;
+        }
+
+        .fne-label {
+            font-size: 8px;
+            color: #009E4D;
+            font-weight: 500;
+            text-align: center;
+            margin-top: 4px;
+            text-transform: uppercase;
+        }
+
+        .client-section {
+            font-size: 13px;
+            margin-top: 5px;
+        }
+        .client-title {
+            font-size: 14px;
+            font-weight: 400;
+            margin-bottom: 2px;
+        }
+
+        /* --- TABLEAU PRINCIPAL --- */
+        .table-main {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 30px;
+            font-size: 12.5px; /* Légèrement plus petit que le corps pour tenir */
+            border-bottom: 1px solid var(--border-color); /* Fermeture du bas */
+        }
+
+        .table-main th {
+            border: 1px solid var(--border-color);
+            padding: 5px 2px;
+            font-weight: 500; /* Juste Medium pour distinction */
+            text-align: center;
+        }
+
+        /* Supprimer les bordures horizontales entre les lignes mais garder le bas */
+        .table-main td {
+            padding: 8px 5px;
+            font-weight: 400;
+            vertical-align: top;
+            border-left: 1px solid var(--border-color);
+            border-right: 1px solid var(--border-color);
+            border-top: none;
+            border-bottom: none;
+        }
+
+
+        /* Dernière ligne du tableau principal avec bordure bas */
+        .table-main tbody tr:last-child td {
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        /* Largeurs fixes */
+        .w-ref  { width: 5%; text-align: left; }
+        .w-des  { width: 35%; text-align: left; }
+        .w-pu   { width: 12%; text-align: right; }
+        .w-qty  { width: 6%; text-align: center; }
+        .w-unit { width: 6%; text-align: center; }
+        .w-tax  { width: 10%; text-align: center; } 
+        .w-rem  { width: 8%; text-align: center; } 
+        .w-mnt  { width: 18%; text-align: right; } 
+
+        /* --- TOTAUX - AVEC SEPARATEURS --- */
+        .totals-wrapper {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: -1px;
+        }
+
+        .table-totals {
+            width: 60%;
+            border-collapse: collapse;
+            font-size: 12.5px;
+            border-bottom: 1px solid var(--border-color); /* Fermeture du bas */
+        }
+
+        /* Conserver toutes les bordures pour les totaux */
+        .table-totals td {
+            border: 1px solid var(--border-color);
+            padding: 8px 5px;
+            text-align: right;
+        }
+
+        .total-label { width: 70%; font-weight: 400; } 
+        .total-value { width: 30%; font-weight: 400; } /* Chiffres en regular aussi */
+
+        /* --- RESUME - AVEC SEPARATEURS --- */
+        .summary-head {
+            font-weight: 500;
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--border-color);
+            display: inline-block;
+            margin-top: 40px;
+            margin-bottom: 5px;
+            font-size: 13px;
+        }
+
+        .table-summary {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12.5px;
+            border-bottom: 1px solid var(--border-color); /* Fermeture du bas */
+        }
+
+        /* Conserver toutes les bordures pour le résumé */
+        .table-summary th, .table-summary td {
+            border: 1px solid var(--border-color);
+            padding: 8px 5px;
+            text-align: right;
+        }
+        
+        .table-summary th { font-weight: 500; text-transform: uppercase; }
+        .table-summary .text-left { text-align: left; }
+
+        @media print {
+            body { background: none; padding: 0; }
+            .page { width: 100%; height: auto; margin: 0; padding: 15mm; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="page">
+
+    <div class="row">
+        <div class="col-left">
+            <div class="company-box">
+                <div class="company-name">{{ company.name }}</div>
+                <div class="info-block">
+                    <div>NCC : {{ company.ncc }}</div>
+                    <div>Régime d'imposition : {{ company.tax_regime }}</div>
+                    <div>Centre des impôts : {{ company.tax_office }}</div>
+                </div>
+            </div>
+
+            <div class="seller-info info-block">
+                <div>RCCM : {{ company.rccm }}</div>
+                <div>Références bancaires : {{ company.bank_details }}</div>
+                <div>Établissement : <br> {{ company.establishment }}</div>
+                <div>Adresse : {{ company.address }}</div>
+                <div>N° Tel : {{ company.phone }}</div>
+                <div>Mail : {{ company.email }}</div>
+                <div style="margin-top: 5px;">Nom du vendeur : {{ invoice.seller_name }}</div>
+                <div>Nom de PDV : {{ company.point_of_sale }}</div>
+                <div>Date et heure : {{ invoice.date_creation.strftime('%d/%m/%Y %H:%M:%S') }}</div>
+                <div>Mode de paiement : {{ invoice.payment_method | default('Cash') }}</div>
+            </div>
+        </div>
+
+        <div class="col-right">
+            <div style="margin-top: 5px;">
+                Facture d'avoir N° {{ invoice.fne_nim if invoice.fne_nim else invoice.code_avoir }}
+            </div>
+            <div style="margin-top: 5px;">
+                Facture initiale N° {{ invoice.fne_nim_origine if invoice.fne_nim_origine else invoice.code_facture_origine }}
+            </div>
+
+            <div class="qr-container">
+                <div style="width: 100px;">
+                    {% if qr_code_uri %}
+                        <img src="{{ qr_code_uri }}" style="width: 100px; height: 100px; object-fit: contain;">
+                    {% else %}
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=Exemple" style="width: 100px; height: 100px; opacity: 0.8;">
+                    {% endif %}
+                </div>
+                <div style="width: 100px; display:flex; flex-direction:column; align-items:center;">
+                     {% if fne_logo_uri %}
+                        <img src="{{ fne_logo_uri }}" style="width: 80px; object-fit: contain;">
+                    {% else %}
+                         <div style="border: 2px solid #E85E23; border-radius: 50%; width: 70px; height: 70px; display: flex; align-items: center; justify-content: center; color: #009E4D; font-weight: 500; font-size: 18px;">
+                            fne
+                        </div>
+                    {% endif %}
+                    <div class="fne-label">AVOIR NORMALISÉ ÉLECTRONIQUE</div>
+                </div>
+            </div>
+
+            <div class="client-section info-block">
+                <div class="client-title">Client</div>
+                <div>Nom : {{ client.name }}</div>
+                <div>Adresse : {{ client.client_email }}</div>
+                <div>NCC : {{ client.ncc }}</div>
+                <div>Régime d'imposition : {{ client.tax_regime }}</div>
+                
+            </div>
+        </div>
+    </div>
+
+    <table class="table-main">
+        <thead>
+            <tr>
+                <th class="w-ref">Réf</th>
+                <th class="w-des">Désignation</th>
+                <th class="w-pu">P.U HT</th>
+                <th class="w-qty">Qté</th>
+                <th class="w-unit">Unité</th>
+                <th class="w-tax">Taxes (%)</th>
+                <th class="w-rem">Rem. (%)</th>
+                <th class="w-mnt">Montant HT</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in details %}
+            <tr>
+                <td class="w-ref">{{ item.id }}</td>
+                <td class="w-des">{{ item.description }}</td>
+                <td class="w-pu">{{ money(item.unit_price, "") }}</td>
+                <td class="w-qty">{{ item.quantity }}</td>
+                <td class="w-unit"></td>
+                <td class="w-tax">TVA (18)</td>
+                <td class="w-rem">0</td>
+                <td class="w-mnt">{{ money(item.unit_price * item.quantity, "") }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="totals-wrapper">
+        <table class="table-totals">
+            <tr>
+                <td class="total-label">TOTAL HT</td>
+                <td class="total-value">{{ money(subtotal, "") }}</td>
+            </tr>
+            {% for rate, val in taxes.items() %}
+            <tr>
+                <td class="total-label">TVA</td>
+                <td class="total-value">{{ money(val, "") }}</td>
+            </tr>
+            {% endfor %}
+            {% if not taxes %}
+            <tr>
+                <td class="total-label">TVA</td>
+                <td class="total-value">0</td>
+            </tr>
+            {% endif %}
+            <tr>
+                <td class="total-label">TOTAL TTC</td>
+                <td class="total-value">{{ money(grand_total, "") }}</td>
+            </tr>
+            <tr>
+                <td class="total-label">AUTRES TAXES</td>
+                <td class="total-value">0</td>
+            </tr>
+            <tr>
+                <td class="total-label">TOTAL A PAYER</td>
+                <td class="total-value">{{ money(grand_total, "") }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="summary-head">RESUME DE L'AVOIR</div>
+    <table class="table-summary">
+        <thead>
+            <tr>
+                <th class="text-left">CATEGORIE</th>
+                <th>SOUS-TOTAL</th>
+                <th>TAUX (%)</th>
+                <th>TOTAL TAXES</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for rate, val in taxes.items() %}
+            <tr>
+                <td class="text-left">TVA normal - TVA sur HT {{ rate }},00% - A</td>
+                <td>{{ money(subtotal, "") }}</td>
+                <td style="text-align: center;">{{ rate }}%</td>
+                <td>{{ money(val, "") }}</td>
+            </tr>
+            {% endfor %}
+            {% if not taxes %}
+            <tr>
+                <td class="text-left">Exonéré</td>
+                <td>{{ money(subtotal, "") }}</td>
+                <td style="text-align: center;">0%</td>
+                <td>0</td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+
+    <!-- <div class="notes">
+        <em>Total en lettres : {{ grand_total_words }}</em>
+    </div> -->
+
+</div>
+
+</body>
+</html>

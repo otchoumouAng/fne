@@ -262,7 +262,11 @@ class InvoiceModule(QWidget):
             "contact": f"{invoice_data['details']['client_email']} • {invoice_data['details']['client_phone']}"
         }
 
-        generator = PDFGenerator(template_file="invoice.html")
+        # Déterminer le template à utiliser (Standard ou FNE)
+        is_fne = invoice_data['details'].get('statut_fne') == 'success'
+        template_name = "invoice_fne.html" if is_fne else "invoice.html"
+
+        generator = PDFGenerator(template_file=template_name)
 
         context = {
             "company": company_data,
@@ -463,8 +467,35 @@ class InvoiceModule(QWidget):
             "contact": f"{invoice_data['details']['client_email']} • {invoice_data['details']['client_phone']}"
         }
 
-        # Utilisation du template 'bl.html'
-        generator = PDFGenerator(template_file="bl.html")
+        # Déterminer le template BL à utiliser (Standard ou FNE)
+        # Note: On regarde le statut FNE du BL, qui est aussi stocké dans invoice_data['details']['statut_fne'] ?
+        # Attention: 'statut_fne' dans invoice_data['details'] (qui vient de FactureModel) est celui de la facture.
+        # Pour le BL, il faudrait vérifier le statut du BL.
+        # Cependant, le code actuel récupère tout via `get_by_id_for_printing`.
+        # FactureModel.get_by_id_for_printing ne joint pas 'statut_fne' du BL.
+        # Il faut donc vérifier comment savoir si le BL est certifié.
+        # Dans 'certify_bl', on update le BL.
+        # Il faudrait idéalement que 'get_by_id_for_printing' retourne aussi le statut FNE du BL s'il est différent.
+        # Mais pour l'instant, supposons que si la facture a un BL certifié, on le sait.
+        #
+        # CORRECTION: On doit récupérer le statut du BL.
+        # On va faire un appel rapide pour vérifier le statut du BL si ce n'est pas dans 'invoice_data'.
+        # invoice_data['details'] contient les champs de la facture + des champs joints du BL (code_bl, bl_date_creation).
+        # Vérifions si 'statut_fne' du BL est dispo. Sinon on le récupère.
+
+        # Récupération explicite des infos du BL pour être sûr (notamment le statut FNE)
+        bl_info = self.bl_model.get_by_facture_id(invoice_id)
+        is_bl_fne = False
+        if bl_info and bl_info['details'].get('statut_fne') == 'success':
+            is_bl_fne = True
+            # On s'assure que les infos FNE du BL sont dans 'invoice' pour le template
+            invoice_data['details']['fne_nim'] = bl_info['details'].get('fne_nim')
+            invoice_data['details']['fne_qr_code'] = bl_info['details'].get('fne_qr_code')
+
+        template_name = "bl_fne.html" if is_bl_fne else "bl.html"
+
+        # Utilisation du template déterminé
+        generator = PDFGenerator(template_file=template_name)
 
         context = {
             "company": company_data,

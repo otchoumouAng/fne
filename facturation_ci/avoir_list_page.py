@@ -193,7 +193,11 @@ class AvoirListPage(QWidget):
             "contact": avoir_data.get('client_contact', 'N/A')
         }
 
-        generator = PDFGenerator(template_file="avoir.html")
+        # Déterminer le template à utiliser (Standard ou FNE)
+        is_fne = avoir_data.get('statut_fne') == 'success'
+        template_name = "avoir_fne.html" if is_fne else "avoir.html"
+
+        generator = PDFGenerator(template_file=template_name)
         context = {
             "company": company_info,
             "client": client_info,

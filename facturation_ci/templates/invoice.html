@@ -273,7 +273,7 @@
                     <p>Mail : {{ company.email }}</p>
                     <p>Nom du vendeur : </p> <!-- {{ invoice.name | default('') }} 'user' doit être passé au contexte -->
                     <p>Nom du PDV : {{ company.point_of_sale }}</p>
-                    <p>Date et heure : {{ invoice.bl_date_creation.strftime('%d/%m/%Y %H:%M:%S') }}</p>
+                    <p>Date et heure : {{ invoice.date_facturation.strftime('%d/%m/%Y %H:%M:%S') if invoice.date_facturation else invoice.bl_date_creation.strftime('%d/%m/%Y %H:%M:%S') }}</p>
                     <p>Mode de paiement : {{ invoice.payment_method | default('Cash') }}</p> 
                 </div>
             </div>
@@ -284,18 +284,8 @@
                 <!-- Bloc L2-D: Invoice N. & FNE section -->
                 <div class="f1-invoice-qr-block">
                     <div class="f1-invoice-number">
-                        Facture de vente N° {{ invoice.fne_nim if invoice.fne_nim else invoice.code_facture }}
+                        Facture de vente N° {{ invoice.code_facture }}
                     </div>
-                    
-                    {% if qr_code_uri %}
-                    <div class="f1-qr-stamp-container">
-                        <!-- QR Code de certification -->
-                        <img src="{{ qr_code_uri }}" alt="QR Code de certification" style="width:100px; height:100px; border: 1px solid var(--gray-200); border-radius: 4px;">
-                        
-                        <!-- Visuel FNE -->
-                        <img src="{{ fne_logo_uri }}" alt="Facture Normalisée Électronique" style="width: 80px; height: 80px;">
-                    </div>
-                    {% endif %}
                 </div>
 
                 <!-- Bloc L3-D: Client info section (client) -->
@@ -303,7 +293,7 @@
                     <p><strong>Client:</strong></p>
                     <p><strong>Nom :</strong> <span class="client-name">{{ client.name }}</span></p>
                     <p><strong>Adresse :</strong> <div>{{ client.address }}</div></p>
-                    <p><strong>Email :</strong> <div>{{ client.email }}</div></p>
+                    <p><strong>Email :</strong> <div>{{ client.client_email }}</div></p>
                     <p><strong>Téléphone :</strong> <div>{{ client.phone }}</div></p>
                     <p><strong>NCC :</strong> {{ client.ncc }}</p>
                     <!-- NOUVEAU CHAMP CLIENT -->
@@ -317,7 +307,7 @@
         <table class="items-table">
             <thead>
                 <tr>
-                    <th>#</th>
+                    <th>Ref</th>
                     <th>Description</th>
                     <th class="text-center">Qté</th>
                     <th class="text-right">PU</th>
@@ -328,10 +318,10 @@
             <tbody>
                 {% for item in details %}
                 <tr>
-                    <td class="text-center">{{ loop.index }}</td>
+                    <td class="text-center">{{ item.id }}</td>
                     <td>
                         <div>{{ item.description }}</div>
-                        <div class="item-reference">Réf: {{ item.reference }}</div>
+                        <!-- <div class="item-reference">Réf: {{ item.reference }}</div> -->
                     </td>
                     <td class="text-center">{{ item.quantity }}</td>
                     <td class="text-right">{{ money(item.unit_price, invoice.get("currency", "XOF")) }}</td>
