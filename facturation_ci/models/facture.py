@@ -65,8 +65,8 @@ class FactureModel:
                 INSERT INTO factures (code_facture, commande_id, date_facturation)
                 VALUES (%s, %s, %s)
             """
-            today = datetime.now().date()
-            cursor.execute(facture_query, (code_facture, commande_id, today))
+            now = datetime.now()
+            cursor.execute(facture_query, (code_facture, commande_id, now))
             facture_id = cursor.lastrowid
 
             # 3. Insérer le nouveau Bordereau de Livraison
@@ -74,7 +74,6 @@ class FactureModel:
                 INSERT INTO bordereaux_livraison (code_bl, facture_id, date_creation)
                 VALUES (%s, %s, %s)
             """
-            now = datetime.now()
             cursor.execute(bl_query, (code_bl, facture_id, now))
 
             connection.commit()
