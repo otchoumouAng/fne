@@ -95,10 +95,10 @@ class CommandeModule(QWidget):
             return
 
         # On peut potentiellement ajouter une logique pour empêcher la modification de commandes terminées/annulées
-        # commande_data = self.model.get_by_id(commande_id)
-        # if commande_data['details']['statut'] != 'en_cours':
-        #     QMessageBox.warning(self, "Modification impossible", "Seules les commandes 'en cours' peuvent être modifiées.")
-        #     return
+        commande_data = self.model.get_by_id(commande_id)
+        if commande_data['details']['statut'] != 'en_cours':
+            QMessageBox.warning(self, "Modification impossible", "Cette commande ne peut plus être modifiée car elle est terminée ou annulée.")
+            return
 
         dialog = CommandeEditorDialog(self.db_manager, commande_id=commande_id)
         if dialog.exec() == QDialog.DialogCode.Accepted:
@@ -115,6 +115,12 @@ class CommandeModule(QWidget):
         commande_id = self.get_selected_commande_id()
         if commande_id is None:
             QMessageBox.warning(self, "Aucune Sélection", "Veuillez sélectionner une commande à supprimer.")
+            return
+
+        # Empêcher la suppression de commandes terminées
+        commande_data = self.model.get_by_id(commande_id)
+        if commande_data['details']['statut'] != 'en_cours':
+            QMessageBox.warning(self, "Suppression impossible", "Cette commande ne peut pas être supprimée car elle est terminée ou annulée.")
             return
 
         reply = QMessageBox.question(self, 'Confirmation de suppression',
