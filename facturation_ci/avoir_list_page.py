@@ -191,6 +191,7 @@ class AvoirListPage(QWidget):
         client_info = {
             "name": avoir_data.get('client_name', 'N/A'),
             "address": avoir_data.get('client_address', 'N/A'),
+            "email": avoir_data.get('client_email', 'N/A'),
             "contact": avoir_data.get('client_contact', 'N/A')
         }
 

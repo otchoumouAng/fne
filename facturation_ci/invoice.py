@@ -261,6 +261,7 @@ class InvoiceModule(QWidget):
         client_data = {
             "name": invoice_data['details']['client_name'],
             "address": invoice_data['details']['client_address'],
+            "email": invoice_data['details']['client_email'],
             "contact": f"{invoice_data['details']['client_email']} • {invoice_data['details']['client_phone']}"
         }
 

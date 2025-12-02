@@ -71,7 +71,8 @@ class FactureAvoirModel:
                 f.fne_nim as fne_nim_origine,
                 c.name as client_name,
                 c.address as client_address,
-                c.phone as client_contact
+                c.phone as client_contact,
+                c.email as client_email
             FROM factures_avoir fa
             JOIN factures f ON fa.facture_origine_id = f.id
             JOIN commandes cmd ON f.commande_id = cmd.id
