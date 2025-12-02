@@ -116,6 +116,15 @@ class FactureModel:
                 update_item_query = "UPDATE commande_items SET fne_item_id = %s WHERE id = %s"
                 cursor.executemany(update_item_query, items_id_map)
 
+            # 3. Mettre à jour le statut de la commande liée à 'terminee'
+            # On récupère d'abord l'ID de la commande
+            cursor.execute("SELECT commande_id FROM factures WHERE id = %s", (facture_id,))
+            result = cursor.fetchone()
+            if result:
+                commande_id = result[0]
+                update_commande_query = "UPDATE commandes SET statut = 'terminee' WHERE id = %s"
+                cursor.execute(update_commande_query, (commande_id,))
+
             connection.commit()
             print(f"Résultats de certification FNE pour la facture {facture_id} sauvegardés avec succès.")
             return True, None
