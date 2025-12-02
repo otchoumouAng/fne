@@ -110,6 +110,11 @@ class InvoiceModule(QWidget):
         self.ui.table_view.setColumnHidden(0, True)
         self.ui.table_view.resizeColumnsToContents()
 
+        # IMPORTANT: Reconnecter le signal de sélection car le modèle a changé
+        self.ui.table_view.selectionModel().selectionChanged.connect(self.on_selection_changed)
+        # S'assurer que les boutons sont mis à jour (désactivés s'il n'y a pas de sélection)
+        self.on_selection_changed(None, None)
+
     def get_selected_invoice_id(self):
         selected_indexes = self.ui.table_view.selectionModel().selectedRows()
         if not selected_indexes:

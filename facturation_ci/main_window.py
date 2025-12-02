@@ -15,8 +15,23 @@ class MainWindow(QMainWindow):
     def setup_navigation(self):
         """Connecte le menu de navigation au QStackedWidget."""
         self.ui.nav_menu.currentRowChanged.connect(self.ui.stacked_widget.setCurrentIndex)
+        self.ui.stacked_widget.currentChanged.connect(self.on_page_changed)
         # Set the initial page to Dashboard
         self.ui.nav_menu.setCurrentRow(0)
+
+    def on_page_changed(self, index):
+        """Appelé lorsque la page change dans le QStackedWidget."""
+        current_widget = self.ui.stacked_widget.widget(index)
+        if current_widget:
+            # Essayer d'appeler une méthode de rafraîchissement standard
+            if hasattr(current_widget, 'refresh'):
+                current_widget.refresh()
+            elif hasattr(current_widget, 'load_data'):
+                current_widget.load_data()
+            elif hasattr(current_widget, 'load_invoices'):
+                current_widget.load_invoices()
+            elif hasattr(current_widget, 'load_commandes'):
+                current_widget.load_commandes(filter_today=True)
 
     def set_module_widget(self, index, widget):
         """Remplace un widget placeholder dans le QStackedWidget par le vrai module."""

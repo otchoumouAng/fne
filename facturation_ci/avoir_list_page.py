@@ -156,6 +156,7 @@ class AvoirListPage(QWidget):
             ]
             self.table_model.appendRow(row)
         self.ui.table_view.resizeColumnsToContents()
+        self.on_selection_changed(None, None)
 
     def on_selection_changed(self, selected, deselected):
         has_selection = self.ui.table_view.selectionModel().hasSelection()
