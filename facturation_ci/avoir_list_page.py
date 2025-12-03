@@ -1,6 +1,6 @@
 import os
 import webbrowser
-from PyQt6.QtWidgets import QWidget, QMessageBox
+from PyQt6.QtWidgets import QWidget, QMessageBox, QHeaderView
 from PyQt6.QtGui import QStandardItemModel, QStandardItem
 from PyQt6.QtCore import Qt, QThread
 
@@ -41,6 +41,7 @@ class AvoirListPage(QWidget):
         ])
         self.ui.table_view.setModel(self.table_model)
         self.ui.table_view.setColumnHidden(0, True)
+        self.ui.table_view.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
 
         self.ui.certify_button.setEnabled(False)
         self.ui.print_button.setEnabled(False)
@@ -155,7 +156,7 @@ class AvoirListPage(QWidget):
                 QStandardItem(avoir['statut_fne'])
             ]
             self.table_model.appendRow(row)
-        self.ui.table_view.resizeColumnsToContents()
+        # self.ui.table_view.resizeColumnsToContents() # Removed to prefer Stretch mode
         self.on_selection_changed(None, None)
 
     def on_selection_changed(self, selected, deselected):
