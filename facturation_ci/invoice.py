@@ -1,7 +1,7 @@
 import sys
 import os
 import webbrowser
-from PyQt6.QtWidgets import QWidget, QMessageBox, QDialog, QMenu
+from PyQt6.QtWidgets import QWidget, QMessageBox, QDialog, QMenu, QHeaderView
 from PyQt6.QtGui import QStandardItemModel, QStandardItem, QAction
 from PyQt6.QtCore import Qt, QThread
 
@@ -108,7 +108,11 @@ class InvoiceModule(QWidget):
             model.appendRow(row)
 
         self.ui.table_view.setColumnHidden(0, True)
-        self.ui.table_view.resizeColumnsToContents()
+
+        # Ajustement des colonnes pour occuper tout l'espace
+        header_view = self.ui.table_view.horizontalHeader()
+        header_view.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        # Optionnel: ajuster certaines colonnes spécifiques si besoin, mais Stretch global répond à la demande.
 
         # IMPORTANT: Reconnecter le signal de sélection car le modèle a changé
         self.ui.table_view.selectionModel().selectionChanged.connect(self.on_selection_changed)
