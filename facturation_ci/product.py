@@ -1,5 +1,5 @@
 import sys
-from PyQt6.QtWidgets import QWidget, QMessageBox, QDialog
+from PyQt6.QtWidgets import QWidget, QMessageBox, QDialog, QHeaderView
 from PyQt6.QtGui import QStandardItemModel, QStandardItem
 from PyQt6.QtCore import Qt
 
@@ -30,6 +30,11 @@ class ProductModule(QWidget):
         self.ui.new_button.clicked.connect(self.open_new_product_dialog)
         self.ui.edit_button.clicked.connect(self.open_edit_product_dialog)
         self.ui.delete_button.clicked.connect(self.delete_product)
+        self.ui.table_view.doubleClicked.connect(self.handle_product_double_click)
+
+    def handle_product_double_click(self, index):
+        """Ouvre le dialogue d'édition au double-clic."""
+        self.open_edit_product_dialog()
 
     def load_products(self):
         products = self.model.get_all()
@@ -54,7 +59,7 @@ class ProductModule(QWidget):
             model.appendRow(row)
 
         self.ui.table_view.setColumnHidden(0, True)
-
+        self.ui.table_view.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
 
     def get_selected_product_id(self):
         selected_indexes = self.ui.table_view.selectionModel().selectedRows()
