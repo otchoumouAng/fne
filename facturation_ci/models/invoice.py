@@ -77,6 +77,40 @@ class InvoiceModel:
         finally:
             cursor.close()
 
+    def get_revenue_per_month(self, months=6):
+        """Récupère le chiffre d'affaires par mois pour les 'months' derniers mois."""
+        connection = self.db_manager.get_connection()
+        if not connection:
+            return []
+
+        cursor = connection.cursor(dictionary=True)
+        query = """
+            SELECT
+                DATE_FORMAT(issue_date, '%b') as month_name,
+                SUM(total_amount) as revenue,
+                YEAR(issue_date) as year,
+                MONTH(issue_date) as month_num
+            FROM invoices
+            WHERE status != 'draft' AND status != 'cancelled'
+              AND issue_date >= DATE_SUB(CURDATE(), INTERVAL %s MONTH)
+            GROUP BY YEAR(issue_date), MONTH(issue_date), DATE_FORMAT(issue_date, '%b')
+            ORDER BY YEAR(issue_date) ASC, MONTH(issue_date) ASC
+        """
+        try:
+            cursor.execute(query, (months,))
+            results = cursor.fetchall()
+            # Convertir en liste de tuples (Mois, Revenu)
+            data = [(row['month_name'], float(row['revenue'])) for row in results]
+
+            # Si pas assez de données, on pourrait vouloir remplir les mois vides,
+            # mais pour l'instant on retourne juste ce qu'on a.
+            return data
+        except Error as e:
+            print(f"Erreur lors de la récupération du CA par mois: {e}")
+            return []
+        finally:
+            cursor.close()
+
     def get_by_id(self, invoice_id):
         """Récupère les détails complets d'une facture, y compris ses lignes d'articles."""
         connection = self.db_manager.get_connection()
