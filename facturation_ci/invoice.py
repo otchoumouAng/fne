@@ -1,7 +1,7 @@
 import sys
 import os
 import webbrowser
-from PyQt6.QtWidgets import QWidget, QMessageBox, QDialog, QMenu
+from PyQt6.QtWidgets import QWidget, QMessageBox, QDialog, QMenu, QHeaderView
 from PyQt6.QtGui import QStandardItemModel, QStandardItem, QAction
 from PyQt6.QtCore import Qt, QThread
 
@@ -74,6 +74,29 @@ class InvoiceModule(QWidget):
 
         # Connecter l'action du nouveau bouton
         self.ui.create_credit_note_button.clicked.connect(self.create_credit_note)
+        self.apply_permissions()
+
+    def apply_permissions(self):
+        if not self.user_data:
+            return
+        perms = self.user_data.get('permissions', [])
+
+        # Facture creation logic usually comes from certifying a command, or direct creation.
+        # Assuming 'invoices.create' covers new invoice button.
+        if 'invoices.create' not in perms:
+            self.ui.new_invoice_button.setVisible(False)
+            self.ui.create_credit_note_button.setVisible(False) # Linked to creating new docs
+
+        # Certify/Print might be 'invoices.edit' or specific
+        if 'invoices.edit' not in perms:
+            # Certification changes state, so it's an edit
+            self.ui.certify_button.setVisible(False)
+            self.ui.bl_button.setVisible(False) # BL actions usually require edit rights or specific
+
+        # Print is read-only, so maybe allowed if view?
+        # But buttons are action buttons.
+
+        # Double click is view details (read only), so we keep it enabled if user has view access (which they do if they see the page)
 
     def on_selection_changed(self, selected, deselected):
         is_selection = self.ui.table_view.selectionModel().hasSelection()
@@ -108,7 +131,11 @@ class InvoiceModule(QWidget):
             model.appendRow(row)
 
         self.ui.table_view.setColumnHidden(0, True)
-        self.ui.table_view.resizeColumnsToContents()
+
+        # Ajustement des colonnes pour occuper tout l'espace
+        header_view = self.ui.table_view.horizontalHeader()
+        header_view.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        # Optionnel: ajuster certaines colonnes spécifiques si besoin, mais Stretch global répond à la demande.
 
         # IMPORTANT: Reconnecter le signal de sélection car le modèle a changé
         self.ui.table_view.selectionModel().selectionChanged.connect(self.on_selection_changed)

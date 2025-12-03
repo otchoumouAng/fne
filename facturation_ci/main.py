@@ -59,14 +59,32 @@ def main():
     avoir_list_page = AvoirListPage(db_manager, main_window)
     main_window.set_module_widget(3, avoir_list_page)
 
-    client_module = ClientModule(db_manager)
+    # Client and Product modules are now handled inside Settings,
+    # but the MainWindow loop might still initialize them or expect them?
+    # In main_window.py we hid index 4 and 5.
+    # So we don't strictly need to inject them here for the main sidebar,
+    # but if they were used for something else, we should check.
+    # Given the recent refactor, clients and products are created inside SettingsModule.
+    # However, to be safe and consistent with main_window logic (which might still try to load them if accessed via code),
+    # we can leave placeholders or just not set them.
+    # But wait, MainWindow.set_module_widget replaces the placeholder in stacked widget.
+    # If we don't replace them, the original placeholders from .ui remain.
+    # Since we hid the buttons, users can't reach index 4 and 5 via sidebar.
+    # But we should pass user_data to SettingsModule if it needs it for its sub-modules (Users, Permissions).
+    # Currently SettingsModule only takes db_manager.
+
+    # We need to update SettingsModule to accept user_data to pass it down to Client/Product/Users modules.
+
+    client_module = ClientModule(db_manager, user_data=user_data)
     main_window.set_module_widget(4, client_module)
 
-    product_module = ProductModule(db_manager)
+    product_module = ProductModule(db_manager, user_data=user_data)
     main_window.set_module_widget(5, product_module)
 
     # Le module Rapports (index 6) n'est pas implémenté.
-    settings_module = SettingsModule(db_manager)
+    settings_module = SettingsModule(db_manager, user_data=user_data)
+    # Connecter le signal de changement de permissions pour rafraîchir l'interface globale
+    settings_module.permissionsChanged.connect(main_window.refresh_permissions)
     main_window.set_module_widget(7, settings_module)
 
     main_window.show()

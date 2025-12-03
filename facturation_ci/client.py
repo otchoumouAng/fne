@@ -1,5 +1,5 @@
 import sys
-from PyQt6.QtWidgets import QWidget, QMessageBox, QDialog
+from PyQt6.QtWidgets import QWidget, QMessageBox, QDialog, QHeaderView
 from PyQt6.QtGui import QStandardItemModel, QStandardItem
 from PyQt6.QtCore import Qt
 
@@ -8,9 +8,10 @@ from models.client import ClientModel
 from crud_dialog import CrudDialog
 
 class ClientModule(QWidget):
-    def __init__(self, db_manager, parent=None):
+    def __init__(self, db_manager, parent=None, user_data=None):
         super().__init__(parent)
         self.db_manager = db_manager
+        self.user_data = user_data
         self.model = ClientModel(self.db_manager)
 
         self.ui = Ui_ClientPage()
@@ -24,12 +25,34 @@ class ClientModule(QWidget):
         ]
 
         self.connect_signals()
+        self.apply_permissions()
         self.load_clients()
 
     def connect_signals(self):
         self.ui.new_button.clicked.connect(self.open_new_client_dialog)
         self.ui.edit_button.clicked.connect(self.open_edit_client_dialog)
         self.ui.delete_button.clicked.connect(self.delete_client)
+        self.ui.table_view.doubleClicked.connect(self.handle_client_double_click)
+
+    def apply_permissions(self):
+        if not self.user_data:
+            return
+        perms = self.user_data.get('permissions', [])
+
+        if 'clients.create' not in perms:
+            self.ui.new_button.setVisible(False)
+        if 'clients.edit' not in perms:
+            self.ui.edit_button.setVisible(False)
+        if 'clients.delete' not in perms:
+            self.ui.delete_button.setVisible(False)
+
+        # If user cannot edit, disable double click editing
+        if 'clients.edit' not in perms:
+            self.ui.table_view.doubleClicked.disconnect(self.handle_client_double_click)
+
+    def handle_client_double_click(self, index):
+        """Ouvre le dialogue d'édition au double-clic."""
+        self.open_edit_client_dialog()
 
     def load_clients(self):
         clients = self.model.get_all()
@@ -54,7 +77,7 @@ class ClientModule(QWidget):
             model.appendRow(row)
 
         self.ui.table_view.setColumnHidden(0, True)
-
+        self.ui.table_view.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
 
     def get_selected_client_id(self):
         selected_indexes = self.ui.table_view.selectionModel().selectedRows()
