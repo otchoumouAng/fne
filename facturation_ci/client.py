@@ -1,5 +1,5 @@
 import sys
-from PyQt6.QtWidgets import QWidget, QMessageBox, QDialog
+from PyQt6.QtWidgets import QWidget, QMessageBox, QDialog, QHeaderView
 from PyQt6.QtGui import QStandardItemModel, QStandardItem
 from PyQt6.QtCore import Qt
 
@@ -30,6 +30,11 @@ class ClientModule(QWidget):
         self.ui.new_button.clicked.connect(self.open_new_client_dialog)
         self.ui.edit_button.clicked.connect(self.open_edit_client_dialog)
         self.ui.delete_button.clicked.connect(self.delete_client)
+        self.ui.table_view.doubleClicked.connect(self.handle_client_double_click)
+
+    def handle_client_double_click(self, index):
+        """Ouvre le dialogue d'édition au double-clic."""
+        self.open_edit_client_dialog()
 
     def load_clients(self):
         clients = self.model.get_all()
@@ -54,7 +59,7 @@ class ClientModule(QWidget):
             model.appendRow(row)
 
         self.ui.table_view.setColumnHidden(0, True)
-
+        self.ui.table_view.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
 
     def get_selected_client_id(self):
         selected_indexes = self.ui.table_view.selectionModel().selectedRows()
