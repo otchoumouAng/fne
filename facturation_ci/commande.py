@@ -1,5 +1,5 @@
 import sys
-from PyQt6.QtWidgets import QWidget, QMessageBox, QDialog
+from PyQt6.QtWidgets import QWidget, QMessageBox, QDialog, QHeaderView
 from PyQt6.QtGui import QStandardItemModel, QStandardItem
 from PyQt6.QtCore import Qt
 
@@ -23,7 +23,30 @@ class CommandeModule(QWidget):
         self.ui.setupUi(self)
 
         self.connect_signals()
+        self.apply_permissions()
         self.load_commandes(filter_today=True) # Filtre par défaut
+
+    def apply_permissions(self):
+        if not self.user_data:
+            return
+        perms = self.user_data.get('permissions', [])
+
+        if 'commandes.create' not in perms:
+            self.ui.new_button.setVisible(False)
+        if 'commandes.edit' not in perms:
+            self.ui.edit_button.setVisible(False)
+        if 'commandes.delete' not in perms:
+            self.ui.delete_button.setVisible(False)
+
+        # If user cannot edit, disable double click editing behavior
+        # But we still want read-only access?
+        # The handle_commande_double_click opens in read_only=True by default logic if just viewing?
+        # Actually handle_commande_double_click opens with read_only=True.
+        # But open_edit_commande_dialog opens for editing.
+        # If we want to allow viewing details even if no edit permission, we keep it but ensure save is disabled in dialog.
+        # However, typically double click is for action.
+        # Let's keep double click for read-only view, which is safe.
+        pass
 
     def connect_signals(self):
         self.ui.new_button.clicked.connect(self.open_new_commande_dialog)
@@ -57,7 +80,7 @@ class CommandeModule(QWidget):
             model.appendRow(row)
 
         self.ui.table_view.setColumnHidden(0, True) # Cacher l'ID
-        self.ui.table_view.resizeColumnsToContents()
+        self.ui.table_view.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
 
     def get_selected_commande_id(self):
         selected_indexes = self.ui.table_view.selectionModel().selectedRows()
