@@ -1,5 +1,5 @@
 import sys
-from PyQt6.QtWidgets import QWidget, QMessageBox, QDialog
+from PyQt6.QtWidgets import QWidget, QMessageBox, QDialog, QHeaderView
 from PyQt6.QtGui import QStandardItemModel, QStandardItem
 from PyQt6.QtCore import Qt
 
@@ -8,9 +8,10 @@ from models.product import ProductModel
 from crud_dialog import CrudDialog
 
 class ProductModule(QWidget):
-    def __init__(self, db_manager, parent=None):
+    def __init__(self, db_manager, parent=None, user_data=None):
         super().__init__(parent)
         self.db_manager = db_manager
+        self.user_data = user_data
         self.model = ProductModel(self.db_manager)
 
         self.ui = Ui_ProductPage()
@@ -24,12 +25,33 @@ class ProductModule(QWidget):
         ]
 
         self.connect_signals()
+        self.apply_permissions()
         self.load_products()
 
     def connect_signals(self):
         self.ui.new_button.clicked.connect(self.open_new_product_dialog)
         self.ui.edit_button.clicked.connect(self.open_edit_product_dialog)
         self.ui.delete_button.clicked.connect(self.delete_product)
+        self.ui.table_view.doubleClicked.connect(self.handle_product_double_click)
+
+    def apply_permissions(self):
+        if not self.user_data:
+            return
+        perms = self.user_data.get('permissions', [])
+
+        if 'products.create' not in perms:
+            self.ui.new_button.setVisible(False)
+        if 'products.edit' not in perms:
+            self.ui.edit_button.setVisible(False)
+        if 'products.delete' not in perms:
+            self.ui.delete_button.setVisible(False)
+
+        if 'products.edit' not in perms:
+            self.ui.table_view.doubleClicked.disconnect(self.handle_product_double_click)
+
+    def handle_product_double_click(self, index):
+        """Ouvre le dialogue d'édition au double-clic."""
+        self.open_edit_product_dialog()
 
     def load_products(self):
         products = self.model.get_all()
@@ -54,7 +76,7 @@ class ProductModule(QWidget):
             model.appendRow(row)
 
         self.ui.table_view.setColumnHidden(0, True)
-
+        self.ui.table_view.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
 
     def get_selected_product_id(self):
         selected_indexes = self.ui.table_view.selectionModel().selectedRows()
