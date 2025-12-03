@@ -1,5 +1,5 @@
 import sys
-from PyQt6.QtWidgets import QWidget, QMessageBox, QDialog
+from PyQt6.QtWidgets import QWidget, QMessageBox, QDialog, QHeaderView
 from PyQt6.QtGui import QStandardItemModel, QStandardItem
 from PyQt6.QtCore import Qt
 
@@ -54,7 +54,7 @@ class ClientModule(QWidget):
             model.appendRow(row)
 
         self.ui.table_view.setColumnHidden(0, True)
-
+        self.ui.table_view.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
 
     def get_selected_client_id(self):
         selected_indexes = self.ui.table_view.selectionModel().selectedRows()
