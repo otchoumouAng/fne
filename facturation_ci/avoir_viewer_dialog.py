@@ -1,9 +1,10 @@
-from PyQt6.QtWidgets import QDialog
+from PyQt6.QtWidgets import QDialog, QHeaderView
 from PyQt6.QtGui import QStandardItemModel, QStandardItem
 from PyQt6.QtCore import Qt
 
 from page._avoir_viewer_dialog import Ui_AvoirViewerDialog
 from models.avoir import FactureAvoirModel
+from core.theme import STYLESHEET
 
 class AvoirViewerDialog(QDialog):
     def __init__(self, db_manager, avoir_id, parent=None):
@@ -14,6 +15,7 @@ class AvoirViewerDialog(QDialog):
 
         self.ui = Ui_AvoirViewerDialog()
         self.ui.setupUi(self)
+        self.setStyleSheet(STYLESHEET)
 
         self.ui.button_box.accepted.connect(self.accept)
         self.load_data()
@@ -42,6 +44,7 @@ class AvoirViewerDialog(QDialog):
         model.setHorizontalHeaderLabels(['ID Produit', 'Description', 'Quantité', 'Prix U.'])
         self.ui.items_table_view.setModel(model)
         self.ui.items_table_view.setColumnHidden(0, True)
+        self.ui.items_table_view.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
 
         for item in items:
             row = [
@@ -52,4 +55,4 @@ class AvoirViewerDialog(QDialog):
             ]
             model.appendRow(row)
 
-        self.ui.items_table_view.resizeColumnsToContents()
+        # self.ui.items_table_view.resizeColumnsToContents()

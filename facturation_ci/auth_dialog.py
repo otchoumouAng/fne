@@ -2,6 +2,7 @@ from PyQt6.QtWidgets import QDialog, QMessageBox
 import bcrypt
 
 from page._login import Ui_LoginDialog
+from core.theme import STYLESHEET
 
 class AuthDialog(QDialog):
     def __init__(self, db_manager, parent=None):
@@ -11,6 +12,7 @@ class AuthDialog(QDialog):
 
         self.ui = Ui_LoginDialog()
         self.ui.setupUi(self)
+        self.setStyleSheet(STYLESHEET)
 
         self.ui.button_box.accepted.connect(self.handle_login)
 

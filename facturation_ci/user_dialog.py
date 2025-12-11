@@ -1,6 +1,7 @@
 from PyQt6.QtWidgets import QDialog, QMessageBox
 from page._user_dialog import Ui_UserDialog
 from models.user import UserModel
+from core.theme import STYLESHEET
 
 class UserDialog(QDialog):
     def __init__(self, db_manager, user_data=None, parent=None):
@@ -11,6 +12,7 @@ class UserDialog(QDialog):
 
         self.ui = Ui_UserDialog()
         self.ui.setupUi(self)
+        self.setStyleSheet(STYLESHEET)
 
         self.load_roles()
         if self.user_data:

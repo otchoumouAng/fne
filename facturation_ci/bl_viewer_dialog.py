@@ -1,9 +1,10 @@
-from PyQt6.QtWidgets import QDialog
+from PyQt6.QtWidgets import QDialog, QHeaderView
 from PyQt6.QtGui import QStandardItemModel, QStandardItem
 from PyQt6.QtCore import Qt
 
 from page._bl_viewer_dialog import Ui_BLViewerDialog
 from models.bl import BordereauLivraisonModel
+from core.theme import STYLESHEET
 
 class BLViewerDialog(QDialog):
     def __init__(self, db_manager, facture_id, parent=None):
@@ -14,6 +15,7 @@ class BLViewerDialog(QDialog):
 
         self.ui = Ui_BLViewerDialog()
         self.ui.setupUi(self)
+        self.setStyleSheet(STYLESHEET)
 
         self.setup_connections()
         self.load_data()
@@ -50,6 +52,7 @@ class BLViewerDialog(QDialog):
         model.setHorizontalHeaderLabels(['ID Produit', 'Description', 'Quantité'])
         self.ui.items_table_view.setModel(model)
         self.ui.items_table_view.setColumnHidden(0, True)
+        self.ui.items_table_view.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
 
         for item in items:
             row = [
@@ -59,4 +62,4 @@ class BLViewerDialog(QDialog):
             ]
             model.appendRow(row)
 
-        self.ui.items_table_view.resizeColumnsToContents()
+        # self.ui.items_table_view.resizeColumnsToContents()

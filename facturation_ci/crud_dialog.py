@@ -1,9 +1,11 @@
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QFormLayout, QDialogButtonBox, QLineEdit, QTextEdit, QLabel
+from core.theme import STYLESHEET
 
 class CrudDialog(QDialog):
     def __init__(self, mode, fields_config, title, data=None, parent=None):
         super().__init__(parent)
         self.setWindowTitle(title)
+        self.setStyleSheet(STYLESHEET)
         self.fields_config = fields_config
         self.widgets = {}
 

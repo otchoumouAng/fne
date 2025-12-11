@@ -1,10 +1,11 @@
-from PyQt6.QtWidgets import QDialog, QDialogButtonBox, QPushButton
+from PyQt6.QtWidgets import QDialog, QDialogButtonBox, QPushButton, QHeaderView
 from PyQt6.QtGui import QStandardItemModel, QStandardItem
 from PyQt6.QtCore import QSortFilterProxyModel, Qt
 
 from page._new_invoice_dialog import Ui_NewInvoiceDialog
 from models.commande import CommandeModel
 from models.client import ClientModel
+from core.theme import STYLESHEET
 
 class NewInvoiceDialog(QDialog):
     def __init__(self, db_manager, parent=None):
@@ -15,6 +16,7 @@ class NewInvoiceDialog(QDialog):
         
         self.ui = Ui_NewInvoiceDialog()
         self.ui.setupUi(self)
+        self.setStyleSheet(STYLESHEET)
 
         # 1. Créer le bouton AVANT de connecter les signaux
         self.generate_button = self.ui.button_box.addButton("Générer la facture", QDialogButtonBox.ButtonRole.AcceptRole)
@@ -37,6 +39,7 @@ class NewInvoiceDialog(QDialog):
 
         self.ui.commandes_table_view.setModel(self.proxy_model)
         self.ui.commandes_table_view.setColumnHidden(0, True)
+        self.ui.commandes_table_view.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
 
     def setup_filters(self):
         # Clients
@@ -91,7 +94,7 @@ class NewInvoiceDialog(QDialog):
             ]
             self.model.appendRow(row)
 
-        self.ui.commandes_table_view.resizeColumnsToContents()
+        # self.ui.commandes_table_view.resizeColumnsToContents() # Removed in favor of Stretch
 
     def apply_filters(self):
         client_id = self.ui.client_filter_combo.currentData()
@@ -113,10 +116,14 @@ class NewInvoiceDialog(QDialog):
         is_selection = self.ui.commandes_table_view.selectionModel().hasSelection()
         self.generate_button.setEnabled(is_selection)
         if is_selection:
-            selected_row = self.ui.commandes_table_view.selectionModel().selectedRows()[0].row()
-            # Remonter à la source du modèle si un proxy est utilisé
-            source_index = self.proxy_model.mapToSource(self.proxy_model.index(selected_row, 0))
-            self.selected_commande_id = self.model.item(source_index.row(), 0).text()
+            selected_rows = self.ui.commandes_table_view.selectionModel().selectedRows()
+            if selected_rows:
+                selected_row = selected_rows[0].row()
+                # Remonter à la source du modèle si un proxy est utilisé
+                source_index = self.proxy_model.mapToSource(self.proxy_model.index(selected_row, 0))
+                self.selected_commande_id = self.model.item(source_index.row(), 0).text()
+            else:
+                 self.selected_commande_id = None
         else:
             self.selected_commande_id = None
 
