@@ -1,4 +1,5 @@
 from PyQt6.QtWidgets import QDialog, QMessageBox
+from PyQt6 import QtCore
 import bcrypt
 
 from page._login import Ui_LoginDialog
@@ -14,7 +15,34 @@ class AuthDialog(QDialog):
         self.ui.setupUi(self)
         self.setStyleSheet(STYLESHEET)
 
-        self.ui.button_box.accepted.connect(self.handle_login)
+        #self.ui.button_box.accepted.connect(self.handle_login)
+        self.ui.login_btn.clicked.connect(self.handle_login)
+
+
+
+         # --- AJOUTE CECI POUR LE LOOK "PRO" ---
+        # Enlève la barre de titre Windows (Frameless)
+        self.setWindowFlags(QtCore.Qt.WindowType.FramelessWindowHint)
+        # Rend le fond de la fenêtre transparent (pour avoir les coins arrondis propres)
+        #self.setAttribute(QtCore.Qt.WidgetAttribute.WA_TranslucentBackground)
+        # ---------------------------------------
+
+        # Connexions
+        self.ui.login_btn.clicked.connect(self.handle_login)
+        # J'ai ajouté un bouton croix 'close_btn' dans le UI, connecte-le aussi :
+        self.ui.close_btn.clicked.connect(self.reject)
+
+    # --- AJOUTE CECI POUR POUVOIR DÉPLACER LA FENÊTRE SANS BARRE DE TITRE ---
+    def mousePressEvent(self, event):
+        if event.button() == QtCore.Qt.MouseButton.LeftButton:
+            self.dragPosition = event.globalPosition().toPoint() - self.frameGeometry().topLeft()
+            event.accept()
+
+    def mouseMoveEvent(self, event):
+        if event.buttons() == QtCore.Qt.MouseButton.LeftButton:
+            self.move(event.globalPosition().toPoint() - self.dragPosition)
+            event.accept()
+
 
     def handle_login(self):
         username = self.ui.username_input.text()
