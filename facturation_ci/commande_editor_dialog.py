@@ -52,7 +52,7 @@ class CommandeEditorDialog(QDialog):
         self.ui.add_item_button.clicked.connect(self._add_item_to_table)
         self.ui.remove_item_button.clicked.connect(self.remove_item)
         self.ui.product_combobox.currentIndexChanged.connect(self._update_product_details)
-        self.ui.quantity_spinbox.valueChanged.connect(self._update_product_details)
+        # self.ui.quantity_spinbox.valueChanged.connect(self._update_product_details)
 
     def load_data(self):
         # Charger les clients
@@ -111,6 +111,7 @@ class CommandeEditorDialog(QDialog):
         self.ui.date_commande_edit.setEnabled(False)
         self.ui.add_item_groupbox.setEnabled(False)
         self.ui.remove_item_button.setEnabled(False)
+        self.ui.price_value.setReadOnly(True)
         self.ui.button_box.clear()
         self.ui.button_box.addButton(QDialogButtonBox.StandardButton.Close)
 
@@ -134,7 +135,12 @@ class CommandeEditorDialog(QDialog):
             QMessageBox.warning(self, "Aucun produit", "Veuillez sélectionner un produit à ajouter.")
             return
 
-        price = float(product['unit_price'])
+        try:
+            price = float(self.ui.price_value.text().replace(',', '.'))
+        except ValueError:
+             QMessageBox.warning(self, "Prix Invalide", "Veuillez entrer un prix valide.")
+             return
+
         tax_rate = float(product['tax_rate'])
         total_ht = price * quantity
         row = [

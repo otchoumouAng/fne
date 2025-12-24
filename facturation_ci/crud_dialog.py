@@ -27,14 +27,25 @@ class CrudDialog(QDialog):
             if data and field_name in data:
                 widget.setText(str(data[field_name]))
 
+            if mode == 'view':
+                if isinstance(widget, (QLineEdit, QTextEdit)):
+                    widget.setReadOnly(True)
+                widget.setEnabled(False) # Optional: visual cue
+
             self.widgets[field_name] = widget
             form_layout.addRow(label, widget)
 
         main_layout.addLayout(form_layout)
 
-        button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
-        button_box.accepted.connect(self.accept)
-        button_box.rejected.connect(self.reject)
+        if mode == 'view':
+            button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Close)
+            button_box.rejected.connect(self.reject) # Close triggers reject usually, or we can connect to accept
+            button_box.clicked.connect(self.accept)
+        else:
+            button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
+            button_box.accepted.connect(self.accept)
+            button_box.rejected.connect(self.reject)
+
         main_layout.addWidget(button_box)
 
     def get_data(self):
