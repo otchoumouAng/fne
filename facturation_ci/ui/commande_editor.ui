@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>894</width>
-    <height>725</height>
+    <width>800</width>
+    <height>600</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,44 +16,19 @@
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="QGroupBox" name="client_groupbox">
-     <property name="minimumSize">
-      <size>
-       <width>0</width>
-       <height>0</height>
-      </size>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>16777215</width>
-       <height>16777215</height>
-      </size>
-     </property>
      <property name="title">
       <string>Client et Date</string>
      </property>
      <layout class="QFormLayout" name="formLayout">
       <item row="0" column="0">
        <widget class="QLabel" name="client_label">
-        <property name="maximumSize">
-         <size>
-          <width>16777213</width>
-          <height>16777215</height>
-         </size>
-        </property>
         <property name="text">
          <string>Client :</string>
         </property>
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QComboBox" name="client_combobox">
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>32</height>
-         </size>
-        </property>
-       </widget>
+       <widget class="QComboBox" name="client_combobox"/>
       </item>
       <item row="1" column="0">
        <widget class="QLabel" name="date_commande_label">
@@ -64,12 +39,6 @@
       </item>
       <item row="1" column="1">
        <widget class="QDateEdit" name="date_commande_edit">
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>32</height>
-         </size>
-        </property>
         <property name="calendarPopup">
          <bool>true</bool>
         </property>
@@ -80,12 +49,6 @@
    </item>
    <item>
     <widget class="QGroupBox" name="add_item_groupbox">
-     <property name="maximumSize">
-      <size>
-       <width>16777215</width>
-       <height>120</height>
-      </size>
-     </property>
      <property name="title">
       <string>Ajouter un Article</string>
      </property>
@@ -105,12 +68,6 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>32</height>
-         </size>
-        </property>
        </widget>
       </item>
       <item row="0" column="2">
@@ -122,12 +79,6 @@
       </item>
       <item row="0" column="3">
        <widget class="QSpinBox" name="quantity_spinbox">
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>32</height>
-         </size>
-        </property>
         <property name="minimum">
          <number>1</number>
         </property>
@@ -182,12 +133,6 @@
    </item>
    <item>
     <widget class="QGroupBox" name="items_groupbox">
-     <property name="minimumSize">
-      <size>
-       <width>0</width>
-       <height>200</height>
-      </size>
-     </property>
      <property name="title">
       <string>Lignes de la Commande</string>
      </property>
@@ -224,12 +169,6 @@
    </item>
    <item>
     <widget class="QGroupBox" name="totals_groupbox">
-     <property name="maximumSize">
-      <size>
-       <width>16777215</width>
-       <height>120</height>
-      </size>
-     </property>
      <property name="title">
       <string>Totaux</string>
      </property>
