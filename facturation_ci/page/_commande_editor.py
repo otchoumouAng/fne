@@ -59,7 +59,7 @@ class Ui_CommandeEditorDialog(object):
         self.price_label = QtWidgets.QLabel(parent=self.add_item_groupbox)
         self.price_label.setObjectName("price_label")
         self.gridLayout.addWidget(self.price_label, 1, 0, 1, 1)
-        self.price_value = QtWidgets.QLabel(parent=self.add_item_groupbox)
+        self.price_value = QtWidgets.QLineEdit(parent=self.add_item_groupbox)
         self.price_value.setObjectName("price_value")
         self.gridLayout.addWidget(self.price_value, 1, 1, 1, 1)
         self.tax_rate_label = QtWidgets.QLabel(parent=self.add_item_groupbox)

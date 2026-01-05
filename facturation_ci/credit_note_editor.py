@@ -1,8 +1,9 @@
-from PyQt6.QtWidgets import QDialog, QDialogButtonBox, QMessageBox
+from PyQt6.QtWidgets import QDialog, QDialogButtonBox, QMessageBox, QHeaderView
 from PyQt6.QtGui import QStandardItemModel, QStandardItem
 
 from page._credit_note_editor import Ui_CreditNoteEditorDialog
 from models.facture import FactureModel
+from core.theme import STYLESHEET
 
 class CreditNoteEditorDialog(QDialog):
     def __init__(self, db_manager, facture_id, parent=None):
@@ -14,6 +15,7 @@ class CreditNoteEditorDialog(QDialog):
 
         self.ui = Ui_CreditNoteEditorDialog()
         self.ui.setupUi(self)
+        self.setStyleSheet(STYLESHEET)
 
         self.setup_ui()
         self.setup_connections()
@@ -29,6 +31,7 @@ class CreditNoteEditorDialog(QDialog):
         self.ui.items_table_view.setModel(self.items_model)
         self.ui.items_table_view.setColumnHidden(0, True) # Masquer ID Commande Item
         self.ui.items_table_view.setColumnHidden(1, True) # Masquer ID Produit
+        self.ui.items_table_view.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
 
     def setup_connections(self):
         self.ui.remove_item_button.clicked.connect(self.remove_selected_item)
@@ -61,7 +64,7 @@ class CreditNoteEditorDialog(QDialog):
             ]
             self.items_model.appendRow(row)
 
-        self.ui.items_table_view.resizeColumnsToContents()
+        # self.ui.items_table_view.resizeColumnsToContents()
         self.update_totals()
 
     def remove_selected_item(self):

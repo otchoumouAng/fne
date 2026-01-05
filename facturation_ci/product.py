@@ -50,8 +50,8 @@ class ProductModule(QWidget):
             self.ui.table_view.doubleClicked.disconnect(self.handle_product_double_click)
 
     def handle_product_double_click(self, index):
-        """Ouvre le dialogue d'édition au double-clic."""
-        self.open_edit_product_dialog()
+        """Ouvre le dialogue de visualisation au double-clic."""
+        self.open_view_product_dialog()
 
     def load_products(self):
         products = self.model.get_all()
@@ -92,6 +92,7 @@ class ProductModule(QWidget):
             mode='new',
             fields_config=self.fields_config,
             title="Nouveau Produit",
+            data={'tax_rate': '18'},
             parent=self
         )
         if dialog.exec() == QDialog.DialogCode.Accepted:
@@ -154,6 +155,25 @@ class ProductModule(QWidget):
             else:
                 QMessageBox.information(self, "Succès", "Produit mis à jour avec succès.")
                 self.load_products()
+
+    def open_view_product_dialog(self):
+        product_id = self.get_selected_product_id()
+        if product_id is None:
+            return
+
+        product_data = self.model.get_by_id(product_id)
+        if not product_data:
+            QMessageBox.critical(self, "Erreur", "Produit non trouvé.")
+            return
+
+        dialog = CrudDialog(
+            mode='view',
+            fields_config=self.fields_config,
+            title="Détails du Produit",
+            data=product_data,
+            parent=self
+        )
+        dialog.exec()
 
 
     def delete_product(self):

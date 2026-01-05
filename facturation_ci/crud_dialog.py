@@ -1,9 +1,11 @@
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QFormLayout, QDialogButtonBox, QLineEdit, QTextEdit, QLabel
+from core.theme import STYLESHEET
 
 class CrudDialog(QDialog):
     def __init__(self, mode, fields_config, title, data=None, parent=None):
         super().__init__(parent)
         self.setWindowTitle(title)
+        self.setStyleSheet(STYLESHEET)
         self.fields_config = fields_config
         self.widgets = {}
 
@@ -25,14 +27,25 @@ class CrudDialog(QDialog):
             if data and field_name in data:
                 widget.setText(str(data[field_name]))
 
+            if mode == 'view':
+                if isinstance(widget, (QLineEdit, QTextEdit)):
+                    widget.setReadOnly(True)
+                widget.setEnabled(False) # Optional: visual cue
+
             self.widgets[field_name] = widget
             form_layout.addRow(label, widget)
 
         main_layout.addLayout(form_layout)
 
-        button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
-        button_box.accepted.connect(self.accept)
-        button_box.rejected.connect(self.reject)
+        if mode == 'view':
+            button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Close)
+            button_box.rejected.connect(self.reject) # Close triggers reject usually, or we can connect to accept
+            button_box.clicked.connect(self.accept)
+        else:
+            button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
+            button_box.accepted.connect(self.accept)
+            button_box.rejected.connect(self.reject)
+
         main_layout.addWidget(button_box)
 
     def get_data(self):
